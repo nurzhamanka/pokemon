@@ -13,7 +13,7 @@ public class PokemonMain {
         }
 
         try {
-            dbc.registerUser("master", "pikachu12", "Ash", "Ketchum", "ash@foo.com", "+77077231275");
+            dbc.registerUser("pinnacle", "paswud345", "Lera", "Rudikova", "lera@foo.com", "+77077681275", "SHSS");
         } catch (SQLException e) {
             e.printStackTrace();
         }

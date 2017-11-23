@@ -70,7 +70,7 @@ public class DatabaseClient {
 
     }
 
-    public void registerUser(String username, String password, String fName, String lName, String email, String phone) throws SQLException {
+    public void registerUser(String username, String password, String fName, String lName, String email, String phone, String area) throws SQLException {
 
         conn.setAutoCommit(false);
         PreparedStatement userCreate = conn.prepareStatement("INSERT INTO USER_DATA(Trainer_ID, Username, Password) "  +
@@ -78,25 +78,28 @@ public class DatabaseClient {
         userCreate.setString(1, username);
         userCreate.setString(2, password);
 
-        PreparedStatement trainerCreate = conn.prepareStatement("INSERT INTO TRAINER(ID, FName, LName, Email, Phone) " +
-                                                                "VALUES ((select TRAINER_ID from USER_DATA where Username = ?), ?, ?, ?, ?)");
+        PreparedStatement trainerCreate = conn.prepareStatement("INSERT INTO TRAINER(ID, FName, LName, Email, Phone, Area_name) " +
+                                                                "VALUES ((select Trainer_ID from USER_DATA where Username = ?), ?, ?, ?, ?, ?)");
         trainerCreate.setString(1, username);
         trainerCreate.setString(2, fName);
         trainerCreate.setString(3, lName);
         trainerCreate.setString(4, email);
         trainerCreate.setString(5, phone);
+        trainerCreate.setString(6, area);
 
         try {
             userCreate.executeUpdate();
             trainerCreate.executeUpdate();
             conn.commit();
-            System.out.print("REGISTERED " + fName + " " + lName + " as " + username);
+            System.out.println("REGISTERED " + fName + " " + lName + " as " + username);
         } catch (SQLException exc) {
-            System.err.print("Transaction is being rolled back");
+            System.err.println("Transaction is being rolled back");
+            exc.printStackTrace();
             conn.rollback();
         }
 
     }
+
 
 
 }
