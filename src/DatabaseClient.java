@@ -1,23 +1,16 @@
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Properties;
-import java.util.Vector;
-import java.sql.Statement;
-import java.sql.ResultSetMetaData;
 
 public class DatabaseClient {
 
-    String userName = "root";
-    String password = "Peridot312";
-    String dbms = "mysql";
-    String serverName = "localhost";
-    String portNumber = "3306";
-    String dbname = "PokemonDB";
+    private String userName = "root";
+    private String password = "Peridot312";
+    private String dbms = "mysql";
+    private String serverName = "localhost";
+    private String portNumber = "3306";
+    private String dbname = "PokemonDB";
 
-    Connection conn = null;
+    private Connection conn = null;
 
     /*
      * In this constructor, connect to the mysql database and exit if it doesn't work
@@ -36,55 +29,74 @@ public class DatabaseClient {
      */
     public Connection getConnection() throws SQLException {
 
-        Connection conn = null;
+        conn = null;
         Properties connectionProps = new Properties();
         connectionProps.put("user", this.userName);
         connectionProps.put("password", this.password);
 
         if (this.dbms.equals("mysql")) {
             conn = DriverManager.getConnection(
-                    "jdbc:" + this.dbms + "://" +
-                            this.serverName +
-                            ":" + this.portNumber + "/" + this.dbname,
-                    connectionProps);
+                "jdbc:" + this.dbms + "://" +
+                        this.serverName +
+                        ":" + this.portNumber + "/" + this.dbname,
+                connectionProps);
         }
         System.out.println("Connected to database");
         return conn;
     }
 
-
-    /*
-     * Some of this method's code came from a very nice generic solution by user 'Paul Vargas' on stackoverflow
-     */
-    public void runQueryLoadTable(String queryString) throws SQLException {
+    public void showAllTrainers() throws SQLException {
 
         try {
             // Execute a query
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(queryString);
+            ResultSet rs = stmt.executeQuery("SELECT * FROM TRAINER JOIN USER_DATA ON TRAINER_ID=ID");
 
-            // Get the meta data so that you can set the table column names
-            ResultSetMetaData metaData = rs.getMetaData();
-            Vector<String> columnNames = new Vector<String>();
-            int columnCount = metaData.getColumnCount();
-            for (int i = 1; i <= columnCount; i++) {
-                // columnNames.add(metaData.getColumnName(i));
-                columnNames.add(metaData.getColumnLabel(i));
-            }
-
-            // Now get the data itself and load it into a 2-D vector
-            Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+            int columnCount = rs.getMetaData().getColumnCount();
+            System.out.println("TRAINERS:");
             while (rs.next()) {
-                Vector<Object> vector = new Vector<Object>();
                 for (int i = 1; i <= columnCount; i++) {
-                    vector.add(rs.getObject(i));
+                    Thread.sleep(200);
+                    System.out.print(rs.getMetaData().getColumnLabel(i) + ": " + rs.getObject(i) + ", ");
                 }
-                data.add(vector);
+                System.out.println("");
             }
 
         } catch (SQLException e) {
-            throw e;
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
     }
+
+    public void registerUser(String username, String password, String fName, String lName, String email, String phone) throws SQLException {
+
+        conn.setAutoCommit(false);
+        PreparedStatement userCreate = conn.prepareStatement("INSERT INTO USER_DATA(Trainer_ID, Username, Password) "  +
+                                                             "VALUES (null, ?, ?)");
+        userCreate.setString(1, username);
+        userCreate.setString(2, password);
+
+        PreparedStatement trainerCreate = conn.prepareStatement("INSERT INTO TRAINER(ID, FName, LName, Email, Phone) " +
+                                                                "VALUES ((select TRAINER_ID from USER_DATA where Username = ?), ?, ?, ?, ?)");
+        trainerCreate.setString(1, username);
+        trainerCreate.setString(2, fName);
+        trainerCreate.setString(3, lName);
+        trainerCreate.setString(4, email);
+        trainerCreate.setString(5, phone);
+
+        try {
+            userCreate.executeUpdate();
+            trainerCreate.executeUpdate();
+            conn.commit();
+            System.out.print("REGISTERED " + fName + " " + lName + " as " + username);
+        } catch (SQLException exc) {
+            System.err.print("Transaction is being rolled back");
+            conn.rollback();
+        }
+
+    }
+
+
 }
