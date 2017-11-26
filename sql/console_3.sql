@@ -1,212 +1,177 @@
-create table ABILITY
+DROP TABLE IF EXISTS ABILITY;
+CREATE TABLE IF NOT EXISTS ABILITY (
+	Name VARCHAR(45) NOT NULL PRIMARY KEY,
+	CONSTRAINT Name_UNIQUE UNIQUE (Name)
+);
+
+
+DROP TABLE IF EXISTS AREA;
+CREATE TABLE IF NOT EXISTS AREA
 (
-	Name varchar(45) not null
-		primary key,
-	constraint Name_UNIQUE
-		unique (Name)
-)
-;
+	Name        VARCHAR(45) NOT NULL PRIMARY KEY,
+	Occupiable  TINYINT(1)  NOT NULL,
+	Description TEXT        NULL,
+	CONSTRAINT Name_UNIQUE
+	UNIQUE (Name)
+);
 
-create table AREA
+
+DROP TABLE IF EXISTS BATTLE;
+CREATE TABLE IF NOT EXISTS BATTLE
 (
-	Name varchar(45) not null
-		primary key,
-	Occupiable tinyint(1) not null,
-	Description text null,
-	constraint Name_UNIQUE
-		unique (Name)
-)
-;
+	ID          INT         NOT NULL,
+	Trainer1_ID INT         NOT NULL,
+	Trainer2_ID INT         NOT NULL,
+	Winner_ID   INT         NULL,
+	Gym_name    VARCHAR(45) NOT NULL,
+	PRIMARY KEY (ID, Trainer1_ID, Trainer2_ID)
+);
 
-create table BATTLE
+CREATE INDEX Gym_name_idx
+	ON BATTLE (Gym_name);
+CREATE INDEX Trainer1_ID_idx
+	ON BATTLE (Trainer1_ID);
+CREATE INDEX Trainer2_ID_idx
+	ON BATTLE (Trainer2_ID);
+CREATE INDEX Winner_ID_idx
+	ON BATTLE (Winner_ID);
+
+DROP TABLE IF EXISTS GYM;
+CREATE TABLE IF NOT EXISTS GYM
 (
-	ID int not null,
-	Trainer1_ID int not null,
-	Trainer2_ID int not null,
-	Winner_ID int null,
-	Gym_name varchar(45) not null,
-	primary key (ID, Trainer1_ID, Trainer2_ID)
-)
-;
+	Name      VARCHAR(45) NOT NULL PRIMARY KEY,
+	Area_name VARCHAR(45) NOT NULL,
+	Leader_ID INT         NULL,
+	CONSTRAINT fk_Area_name_GYM
+	FOREIGN KEY (Area_name) REFERENCES AREA (Name),
+	CONSTRAINT fk_Leader_ID_GYM
+	FOREIGN KEY (Leader_ID) REFERENCES pokemondb.TRAINER (ID)
+);
 
-create index Gym_name_idx
-	on BATTLE (Gym_name)
-;
+CREATE INDEX Area_name_idx
+	ON GYM (Area_name);
 
-create index Trainer1_ID_idx
-	on BATTLE (Trainer1_ID)
-;
+CREATE INDEX Leader_ID_idx
+	ON GYM (Leader_ID);
 
-create index Trainer2_ID_idx
-	on BATTLE (Trainer2_ID)
-;
+ALTER TABLE BATTLE
+	ADD CONSTRAINT fk_Gym_name_BATTLE
+FOREIGN KEY (Gym_name) REFERENCES GYM (Name);
 
-create index Winner_ID_idx
-	on BATTLE (Winner_ID)
-;
 
-create table GYM
+DROP TABLE IF EXISTS GYM;
+CREATE TABLE IF NOT EXISTS HAS
 (
-	Name varchar(45) not null
-		primary key,
-	Area_name varchar(45) not null,
-	Leader_ID int null,
-	constraint fk_Area_name_GYM
-		foreign key (Area_name) references AREA (Name),
-	constraint fk_Leader_ID_GYM
-		foreign key (Leader_ID) references pokemondb.TRAINER (ID)
-)
-;
+	Pokemon_name VARCHAR(45) NOT NULL,
+	Ability_name VARCHAR(45) NOT NULL,
+	PRIMARY KEY (Pokemon_name, Ability_name),
+	CONSTRAINT fk_Ability_name_HAS
+	FOREIGN KEY (Ability_name) REFERENCES ABILITY (Name)
+);
 
-create index Area_name_idx
-	on GYM (Area_name)
-;
+CREATE INDEX Ability_name_idx
+	ON HAS (Ability_name);
 
-create index Leader_ID_idx
-	on GYM (Leader_ID)
-;
-
-alter table BATTLE
-	add constraint fk_Gym_name_BATTLE
-		foreign key (Gym_name) references GYM (Name)
-;
-
-create table HAS
+DROP TABLE IF EXISTS PKM_OWNED;
+CREATE TABLE IF NOT EXISTS PKM_OWNED
 (
-	Pokemon_name varchar(45) not null,
-	Ability_name varchar(45) not null,
-	primary key (Pokemon_name, Ability_name),
-	constraint fk_Ability_name_HAS
-		foreign key (Ability_name) references ABILITY (Name)
-)
-;
+	Name       VARCHAR(45) NOT NULL,
+	Trainer_ID INT         NOT NULL,
+	Nickname   VARCHAR(45) NOT NULL,
+	PRIMARY KEY (Name, Trainer_ID, Nickname)
+);
 
-create index Ability_name_idx
-	on HAS (Ability_name)
-;
+CREATE INDEX Name_idx
+	ON PKM_OWNED (Name);
+CREATE INDEX Trainer_ID_idx
+	ON PKM_OWNED (Trainer_ID);
 
-create table PKM_OWNED
+DROP TABLE IF EXISTS PKM_WILD;
+CREATE TABLE IF NOT EXISTS PKM_WILD
 (
-	Name varchar(45) not null,
-	Trainer_ID int not null,
-	Nickname varchar(45) not null,
-	primary key (Name, Trainer_ID, Nickname)
-)
-;
+	Date_time      DATETIME    NOT NULL,
+	Name           VARCHAR(45) NOT NULL,
+	Aggressiveness INT         NULL,
+	Stamina        INT         NULL,
+	Area_name      VARCHAR(45) NOT NULL,
+	Trainer_ID     INT         NULL,
+	PRIMARY KEY (Date_time, Name),
+	CONSTRAINT fk_Area_name_WILD
+	FOREIGN KEY (Area_name) REFERENCES AREA (Name)
+);
 
-create index Name_idx
-	on PKM_OWNED (Name)
-;
+CREATE INDEX fk_Area_name_idx
+	ON PKM_WILD (Area_name);
+CREATE INDEX Name_idx
+	ON PKM_WILD (Name);
+CREATE INDEX Trainer_ID_idx
+	ON PKM_WILD (Trainer_ID);
 
-create index Trainer_ID_idx
-	on PKM_OWNED (Trainer_ID)
-;
-
-create table PKM_WILD
+DROP TABLE  IF EXISTS POKEMON;
+CREATE TABLE IF NOT EXISTS POKEMON
 (
-	Date_time datetime not null,
-	Name varchar(45) not null,
-	Aggressiveness int null,
-	Stamina int null,
-	Area_name varchar(45) not null,
-	Trainer_ID int null,
-	primary key (Date_time, Name),
-	constraint fk_Area_name_WILD
-		foreign key (Area_name) references AREA (Name)
-)
-;
+	Name        VARCHAR(20) NOT NULL
+		PRIMARY KEY,
+	Description MEDIUMTEXT  NOT NULL,
+	CONSTRAINT Name_UNIQUE
+	UNIQUE (Name)
+);
 
-create index fk_Area_name_idx
-	on PKM_WILD (Area_name)
-;
+ALTER TABLE HAS
+	ADD CONSTRAINT fk_Pokemon_name_HAS
+FOREIGN KEY (Pokemon_name) REFERENCES POKEMON (Name);
 
-create index Name_idx
-	on PKM_WILD (Name)
-;
+ALTER TABLE PKM_OWNED
+	ADD CONSTRAINT fk_Name_OWNED
+FOREIGN KEY (Name) REFERENCES POKEMON (Name);
 
-create index Trainer_ID_idx
-	on PKM_WILD (Trainer_ID)
-;
+ALTER TABLE PKM_WILD
+	ADD CONSTRAINT fk_Name_WILD
+FOREIGN KEY (Name) REFERENCES POKEMON (Name);
 
-create table POKEMON
+DROP TABLE IF EXISTS POKEMON;
+CREATE TABLE IF NOT EXISTS POKEMON_TYPE
 (
-	Name varchar(20) not null
-		primary key,
-	Description mediumtext not null,
-	constraint Name_UNIQUE
-		unique (Name)
-)
-;
+	Pkm_name VARCHAR(45) NOT NULL,
+	Type     VARCHAR(45) NOT NULL,
+	PRIMARY KEY (Pkm_name, Type),
+	CONSTRAINT fk_Pkm_name_PKM_TYPE
+	FOREIGN KEY (Pkm_name) REFERENCES POKEMON (Name)
+);
 
-alter table HAS
-	add constraint fk_Pokemon_name_HAS
-		foreign key (Pokemon_name) references POKEMON (Name)
-;
+CREATE INDEX Name_idx
+	ON POKEMON_TYPE (Pkm_name);
 
-alter table PKM_OWNED
-	add constraint fk_Name_OWNED
-		foreign key (Name) references POKEMON (Name)
-;
-
-alter table PKM_WILD
-	add constraint fk_Name_WILD
-		foreign key (Name) references POKEMON (Name)
-;
-
-create table POKEMON_TYPE
+DROP TABLE IF EXISTS TRAINER;
+CREATE TABLE IF NOT EXISTS TRAINER
 (
-	Pkm_name varchar(45) not null,
-	Type varchar(45) not null,
-	primary key (Pkm_name, Type),
-	constraint fk_Pkm_name_PKM_TYPE
-		foreign key (Pkm_name) references POKEMON (Name)
-)
-;
+	ID        INT AUTO_INCREMENT
+		PRIMARY KEY,
+	FName     VARCHAR(45) NOT NULL,
+	LName     VARCHAR(45) NOT NULL,
+	Area_name VARCHAR(45) NOT NULL,
+	CONSTRAINT ID_UNIQUE
+	UNIQUE (ID),
+	CONSTRAINT fk_Area_name_TRAINER
+	FOREIGN KEY (Area_name) REFERENCES AREA (Name)
+);
 
-create index Name_idx
-	on POKEMON_TYPE (Pkm_name)
-;
+CREATE INDEX Area_name_idx
+	ON TRAINER (Area_name);
 
-create table TRAINER
-(
-	ID int auto_increment
-		primary key,
-	FName varchar(45) not null,
-	LName varchar(45) not null,
-	Area_name varchar(45) not null,
-	constraint ID_UNIQUE
-		unique (ID),
-	constraint fk_Area_name_TRAINER
-		foreign key (Area_name) references AREA (Name)
-)
-;
-
-create index Area_name_idx
-	on TRAINER (Area_name)
-;
-
-alter table BATTLE
-	add constraint fk_Trainer1_ID_BATTLE
-		foreign key (Trainer1_ID) references TRAINER (ID)
-;
-
-alter table BATTLE
-	add constraint fk_Trainer2_ID_BATTLE
-		foreign key (Trainer2_ID) references TRAINER (ID)
-;
-
-alter table BATTLE
-	add constraint fk_Winner_ID_BATTLE
-		foreign key (Winner_ID) references TRAINER (ID)
-;
-
-alter table PKM_OWNED
-	add constraint fk_Trainer_ID_OWNED
-		foreign key (Trainer_ID) references TRAINER (ID)
-;
-
-alter table PKM_WILD
-	add constraint fk_Trainer_ID_WILD
-		foreign key (Trainer_ID) references TRAINER (ID)
-;
+ALTER TABLE BATTLE
+	ADD CONSTRAINT fk_Trainer1_ID_BATTLE
+FOREIGN KEY (Trainer1_ID) REFERENCES TRAINER (ID);
+ALTER TABLE BATTLE
+	ADD CONSTRAINT fk_Trainer2_ID_BATTLE
+FOREIGN KEY (Trainer2_ID) REFERENCES TRAINER (ID);
+ALTER TABLE BATTLE
+	ADD CONSTRAINT fk_Winner_ID_BATTLE
+FOREIGN KEY (Winner_ID) REFERENCES TRAINER (ID);
+ALTER TABLE PKM_OWNED
+	ADD CONSTRAINT fk_Trainer_ID_OWNED
+FOREIGN KEY (Trainer_ID) REFERENCES TRAINER (ID);
+ALTER TABLE PKM_WILD
+	ADD CONSTRAINT fk_Trainer_ID_WILD
+FOREIGN KEY (Trainer_ID) REFERENCES TRAINER (ID);
 
