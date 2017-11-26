@@ -3,13 +3,6 @@ import java.util.Properties;
 
 public class DatabaseClient {
 
-    private String userName = "root";
-    private String password = "Peridot312";
-    private String dbms = "mysql";
-    private String serverName = "localhost";
-    private String portNumber = "3306";
-    private String dbname = "PokemonDB";
-
     private Connection conn = null;
 
     /*
@@ -31,14 +24,20 @@ public class DatabaseClient {
 
         conn = null;
         Properties connectionProps = new Properties();
-        connectionProps.put("user", this.userName);
-        connectionProps.put("password", this.password);
+        String userName = "root";
+        connectionProps.put("user", userName);
+        String password = "Peridot312";
+        connectionProps.put("password", password);
 
-        if (this.dbms.equals("mysql")) {
+        String dbms = "mysql";
+        if (dbms.equals("mysql")) {
+            String portNumber = "3306";
+            String serverName = "localhost";
+            String dbname = "PokemonDB";
             conn = DriverManager.getConnection(
-                "jdbc:" + this.dbms + "://" +
-                        this.serverName +
-                        ":" + this.portNumber + "/" + this.dbname,
+                "jdbc:" + dbms + "://" +
+                        serverName +
+                        ":" + portNumber + "/" + dbname,
                 connectionProps);
         }
         System.out.println("Connected to database");
