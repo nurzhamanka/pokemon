@@ -2,6 +2,6 @@
 <project version="4">
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$" dialect="MySQL" />
-    <file url="file://$PROJECT_DIR$/../scripts/no_schema_script_no_FK.sql" dialect="MySQL" />
+    <file url="PROJECT" dialect="MySQL" />
   </component>
 </project>
