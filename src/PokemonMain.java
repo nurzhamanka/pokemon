@@ -1,22 +1,10 @@
-import java.sql.SQLException;
-
 public class PokemonMain {
 
     public static void main(String[] args) {
 
-        DatabaseClient dbc = new DatabaseClient();
+        DatabaseClient dbc = new DatabaseClient("root", "TheBestPass12345");
 
-        try {
-            dbc.showAllTrainers();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
 
-        try {
-            dbc.registerUser("pinnacle", "paswud345", "Lera", "Rudikova", "lera@foo.com", "+77077681275", "SHSS");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
 
     }
 }
