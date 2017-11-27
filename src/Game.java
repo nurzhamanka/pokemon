@@ -1,4 +1,5 @@
 import DatabasePart.DatabaseClient;
+import Model.Configure;
 import Model.Trainer;
 
 import java.util.Scanner;
@@ -12,6 +13,7 @@ public class Game {
     public Game() {
         player = null;
         currentMenu = "-----";
+        Configure.loadConfigure("config.txt");
         scanner = new Scanner(System.in);
         dbc = new DatabaseClient();
     }
