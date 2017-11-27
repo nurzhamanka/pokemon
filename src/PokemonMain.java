@@ -4,8 +4,6 @@ public class PokemonMain {
 
         DatabaseClient dbc = new DatabaseClient("root", "TheBestPass12345");
 
-        //
-
 
     }
 }
