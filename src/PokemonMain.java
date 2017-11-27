@@ -1,24 +1,13 @@
 import DatabasePart.DatabaseClient;
+import Model.Trainer;
 
 import java.sql.SQLException;
 
 public class PokemonMain {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 
-        DatabaseClient dbc = new DatabaseClient();
-
-        try {
-            dbc.showAllTrainers();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            dbc.registerUser("pinnacle", "paswud345", "Lera", "Rudikova", "SHSS");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
+        Game game = new Game();
+        game.play();
     }
 }

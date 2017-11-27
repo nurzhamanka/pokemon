@@ -1,6 +1,9 @@
 package DatabasePart;
 
+import Model.Trainer;
+
 import java.sql.*;
+import java.util.Objects;
 import java.util.Properties;
 
 public class DatabaseClient {
@@ -41,49 +44,71 @@ public class DatabaseClient {
 
     public void showAllTrainers() throws SQLException {
 
-        try {
-            // Execute a query
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM TRAINER");
+        // Execute a query
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT * FROM TRAINER");
 
-            int columnCount = rs.getMetaData().getColumnCount();
-            System.out.println("TRAINERS:");
-            while (rs.next()) {
-                for (int i = 1; i <= columnCount; i++) {
-                    Thread.sleep(200);
-                    System.out.print(rs.getMetaData().getColumnLabel(i) + ": " + rs.getObject(i) + ", ");
-                }
-                System.out.println("");
+        int columnCount = rs.getMetaData().getColumnCount();
+        System.out.println("TRAINERS:");
+        while (rs.next()) {
+            for (int i = 1; i <= columnCount; i++) {
+                System.out.print(rs.getMetaData().getColumnLabel(i) + ": " + rs.getObject(i) + ", ");
             }
-
-        } catch (SQLException | InterruptedException e) {
-            e.printStackTrace();
+            System.out.println("");
         }
 
     }
 
-    public void registerUser(String username, String password, String fName, String lName, String area) throws SQLException {
+    public Trainer getTrainer(String username) {
+        PreparedStatement statement;
+        try {
+            statement = conn.prepareStatement("SELECT * FROM TRAINER WHERE TRAINER.username=?");
+            statement.setString(1, username);
+            ResultSet rs = statement.executeQuery();
+//            rs.getMetaData();
+            if (!rs.next())
+                return null;
+            return new Trainer(rs);
 
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void registerUser(Trainer trainer) throws SQLException {
         conn.setAutoCommit(false);
 
-        PreparedStatement trainerCreate = conn.prepareStatement("INSERT INTO TRAINER(username, password, FName, LName, Area_name)\n" +
+        PreparedStatement trainerCreate = conn.prepareStatement(
+                "INSERT INTO TRAINER(username, password, FName, LName, Area_name)\n" +
                 "VALUES (?, ?, ?, ?, ?)");
-        trainerCreate.setString(1, username);
-        trainerCreate.setString(2, password);
-        trainerCreate.setString(3, fName);
-        trainerCreate.setString(4, lName);
-        trainerCreate.setString(5, area);
+        trainerCreate.setString(1, trainer.getUsername());
+        trainerCreate.setString(2, trainer.getPassword());
+        trainerCreate.setString(3, trainer.getFirstName());
+        trainerCreate.setString(4, trainer.getLastName());
+        trainerCreate.setString(5, trainer.getArea());
 
         try {
             trainerCreate.executeUpdate();
             conn.commit();
-            System.out.println("REGISTERED " + fName + " " + lName + " as " + username);
+            System.out.println("REGISTERED " + trainer.getFirstName() + " " + trainer.getLastName() + " as " + trainer.getUsername());
         } catch (SQLException exc) {
             System.err.println("Transaction is being rolled back");
             exc.printStackTrace();
             conn.rollback();
         }
 
+    }
+
+
+    public Trainer Authorize(String username, String password) throws Exception {
+        Trainer trainer = getTrainer(username);
+        if (trainer == null) {
+            return null;
+        }
+        if (!password.equals(trainer.getPassword()))
+            throw new Exception("Wrong password");
+        return trainer;
     }
 
 
