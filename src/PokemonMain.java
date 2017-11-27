@@ -1,3 +1,5 @@
+import DatabasePart.DatabaseClient;
+
 import java.sql.SQLException;
 
 public class PokemonMain {
@@ -13,7 +15,7 @@ public class PokemonMain {
         }
 
         try {
-            dbc.registerUser("pinnacle", "paswud345", "Lera", "Rudikova", "lera@foo.com", "+77077681275", "SHSS");
+            dbc.registerUser("pinnacle", "paswud345", "Lera", "Rudikova", "SHSS");
         } catch (SQLException e) {
             e.printStackTrace();
         }
