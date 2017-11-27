@@ -13,7 +13,7 @@ public class DatabaseClient {
     /*
      * In this constructor, connect to the mysql database and exit if it doesn't work
      */
-    public DatabaseClient() {
+    public DatabaseClient(String username, String password) {
         try {
             conn = getConnection();
         } catch (SQLException e) {
@@ -96,10 +96,12 @@ public class DatabaseClient {
             System.err.println("Transaction is being rolled back");
             exc.printStackTrace();
             conn.rollback();
+        } finally {
+            trainerCreate.close();
+            conn.setAutoCommit(true);
         }
 
     }
-
 
     public Trainer Authorize(String username, String password) throws Exception {
         Trainer trainer = getTrainer(username);
@@ -110,6 +112,116 @@ public class DatabaseClient {
             throw new Exception("Wrong password");
         return trainer;
     }
+    
+    public String encounterPokemon() throws SQLException {
 
+        try {
+            // Execute a query
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT Name FROM POKEMON ORDER BY RAND() LIMIT 1");
+            return rs.getString("Name");
+
+        } catch (SQLException e) {
+            return null;
+        }
+
+    }
+
+    public void spotPokemon(String name, int aggr, int stam, String area) throws SQLException {
+
+        conn.setAutoCommit(false);
+
+        java.util.Date dt = new java.util.Date();
+        Timestamp currentTime = new java.sql.Timestamp(dt.getTime());
+
+        PreparedStatement insertWild = conn.prepareStatement("INSERT INTO PKM_WILD(Date_time, Name, Aggressiveness, Stamina, Area_name) VALUES " +
+                                                            "(?, ?, ?, ?, ?)");
+        insertWild.setTimestamp(1, currentTime);
+        insertWild.setString(2, name);
+        insertWild.setInt(3, aggr);
+        insertWild.setInt(4, stam);
+        insertWild.setString(5, area);
+
+        try {
+            insertWild.executeUpdate();
+            conn.commit();
+            System.out.println("SPOTTED POKEMON " + name + " at " + area);
+        } catch (SQLException exc) {
+            System.err.println("Transaction is being rolled back");
+            exc.printStackTrace();
+            conn.rollback();
+        } finally {
+            insertWild.close();
+            conn.setAutoCommit(true);
+        }
+    }
+
+    public void showTrainers(String area) throws SQLException {
+
+        try {
+            // Execute a query
+            PreparedStatement stmt = conn.prepareStatement("SELECT concat(FName, ' ', LName) as Name FROM TRAINER WHERE Area_name = ?");
+            stmt.setString(1, area);
+            ResultSet rs = stmt.executeQuery();
+
+            System.out.println("TRAINERS IN " + area + ":");
+            while (rs.next()) {
+                System.out.println(rs.getObject("Name"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void openPokedex(String name) throws SQLException {
+
+        try {
+            // Get a Pokemon's name, description and type
+            PreparedStatement pokemon = conn.prepareStatement("SELECT Name, Description, Type FROM POKEMON " +
+                    "LEFT JOIN POKEMON_TYPE ON POKEMON.Name = POKEMON_TYPE.Pkm_name " +
+                    "WHERE Name = ?");
+            pokemon.setString(1, name);
+            ResultSet rsPokemon = pokemon.executeQuery();
+
+            PreparedStatement abilities = conn.prepareStatement("SELECT a.Name as aName FROM (POKEMON " +
+                                                                "JOIN HAS ON POKEMON.Name = HAS.Pokemon_name) " +
+                                                                "JOIN ABILITY a ON Ability_name = a.Name " +
+                                                                "WHERE POKEMON.Name = ?");
+            abilities.setString(1, name);
+            ResultSet rsAbilities = abilities.executeQuery();
+
+            System.out.println("POKEDEX DATA FOR " + name + ":");
+
+            rsPokemon.next();
+            System.out.println("Name: " + rsPokemon.getString("Name"));
+            System.out.println("Description: " + rsPokemon.getString("Description"));
+
+            System.out.print("Type: ");
+
+            if (rsPokemon.getString("Type") != null)
+                System.out.print(rsPokemon.getString("Type"));
+            else System.out.print("None");
+            while (rsPokemon.next()) {
+                System.out.print(" / " + rsPokemon.getString("Type"));
+            }
+            System.out.println();
+
+            System.out.print("Abilities: ");
+
+            if (rsAbilities.next())
+                System.out.print(rsAbilities.getString("aName"));
+            else System.out.print("None");
+            while (rsAbilities.next()) {
+                System.out.print(", " + rsAbilities.getString("aName"));
+            }
+            System.out.println("\n");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
 
 }
