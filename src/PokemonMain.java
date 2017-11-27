@@ -1,9 +1,8 @@
 public class PokemonMain {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 
-        DatabaseClient dbc = new DatabaseClient("root", "TheBestPass12345");
-
-
+        Game game = new Game();
+        game.play();
     }
 }
