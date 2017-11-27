@@ -1,7 +1,10 @@
 import DatabasePart.DatabaseClient;
 import Model.Configure;
 import Model.Trainer;
+import com.mysql.jdbc.jdbc2.optional.SuspendableXAConnection;
 
+import java.sql.SQLException;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Game {
@@ -18,61 +21,109 @@ public class Game {
         dbc = new DatabaseClient();
     }
 
-    public void play() throws Exception {
+    void play() throws Exception {
         dbc.showAllTrainers();
         System.out.println("Welcome to $gamename$\n");
 
-        this.Authorize();
+        this.LoginMenu();
     }
 
-    public boolean isAuthorized() {
-        return player != null;
-    }
+    private void LoginMenu() {
+        this.currentMenu = "Login menu";
 
-    public void Authorize() throws Exception {
-        if (isAuthorized()) {
-            throw new Exception("Player is already authorized");
+        this.player = null;
+        int response = promptChoice("What would you like to do?",
+                "login to existing account", "register new account");
+        switch (response) {
+            case 0:
+                this.player = AuthorizeMenu();
+                break;
+            case 1:
+                this.player = RegisterMenu();
+                break;
         }
-        player = this.AuthorizeMenu();
     }
 
-    public Trainer AuthorizeMenu() {
-        System.out.print("Enter login: ");
-        String login = scanner.nextLine();
-        System.out.print(  "Enter password: ");
-        String password = scanner.nextLine();
+    private Trainer AuthorizeMenu() {
+        this.currentMenu = "Authorize menu";
+        String login = getAnswer("Enter login: ");
+        String password = getAnswer("Enter password: ");
 
         Trainer trainer = null;
         try {
             trainer = dbc.Authorize(login, password);
+            if (trainer == null) {
+                System.out.println("There is no player with nickname: " + login);
+            }
         } catch (Exception e) {
             System.out.println("Password is wrong. Try again");
-            return AuthorizeMenu();
+//            return AuthorizeMenu();
         }
-        if (trainer == null) {
-            System.out.println("There is no player with nickname:" + login + "\n");
-            System.out.println("Would you like to try again or register? Y(es) to try again, N(o) to register");
-            String responce = scanner.nextLine();
-            if (responce.equals("Yes") || responce.equals("Y"))
-                return AuthorizeMenu();
-            else
-                return this.RegisterMenu();
+
+        if (trainer != null) {
+            System.out.println();
+            System.out.println("Hello, " + trainer.getUsername());
+            return trainer;
         }
-        System.out.println("Hello, " + trainer.getUsername());
+        int response = promptChoice("Would you like to try again?", "try again", "cancel");
+        System.out.println();
+        if (response == 0)
+            return this.AuthorizeMenu();
+        else
+            return null;
+    }
+
+    private Trainer RegisterMenu() {
+        this.currentMenu = "Register menu";
+        System.out.println("We need some information about you");
+        String login = getAnswer("nickname: ");
+        String password = getAnswer("password: ");
+        String fname = getAnswer("First name: ");
+        String lname = getAnswer("Last name: ");
+        String area = null;
+        int response = promptChoice("Enter starting area", "SST", "SHSS", "SENG");
+        switch (response) {
+            case 0:
+                area = "SST";
+                break;
+            case 1:
+                area = "SHSS";
+            case 2:
+                area = "SENG";
+        }
+        Trainer trainer = new Trainer(login, password, fname, lname, area);
+        try {
+            dbc.registerUser(trainer);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Some error happened. " + e.getErrorCode());
+        }
         return trainer;
     }
 
-    public Trainer RegisterMenu() {
-        return null;
+    private String getAnswer(String str) {
+        System.out.print(str);
+        return scanner.next();
     }
 
-    public void printChoices(String... choices) {
+    private int promptChoice(String title, String... choices) {
+        printChoices(title, choices);
+        int choice = -1;
+        while (!(0 <= choice && choice < choices.length)) { // will loop until there's a valid age
+            try {
+                choice = scanner.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.println("Enter value between 0 and " + (choices.length - 1) + ". Try again.");
+            }
+        }
+        return choice;
+    }
 
-        int i = 0;
-
-        for (String c : choices) {
-            System.out.print(i + ": ");
-            System.out.println(c);
+    private void printChoices(String title, String... choices) {
+        System.out.println(title);
+        for (int i = 0; i < choices.length; i++) {
+            System.out.print((i) + ": ");
+            System.out.println(choices[i]);
         }
     }
 }

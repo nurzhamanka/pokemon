@@ -3,3 +3,6 @@ INSERT INTO AREA(Name, Occupiable, Description)
 
 INSERT INTO AREA(Name, Occupiable, Description)
   VALUES ("SST", "1", "School of Science and Technology");
+
+INSERT INTO AREA(Name, Occupiable, Description)
+  VALUES ("SENG", "1", "School of Engineering");
