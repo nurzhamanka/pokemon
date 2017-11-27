@@ -1,4 +1,4 @@
-package DatabasePart;
+//package DatabasePart;
 
 import Model.Trainer;
 
