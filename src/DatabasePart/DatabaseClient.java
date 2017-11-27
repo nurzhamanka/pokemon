@@ -1,9 +1,9 @@
 package DatabasePart;
 
+import Model.Configure;
 import Model.Trainer;
 
 import java.sql.*;
-import java.util.Objects;
 import java.util.Properties;
 
 public class DatabaseClient {
@@ -26,18 +26,12 @@ public class DatabaseClient {
      * Make the connection, pass the exception to the caller
      */
     private Connection getConnection() throws SQLException {
-        String username = "pokemon";
-        String password = "pokebekthebest";
-        String dbms = "mysql";
-        String portNumber = "3306";
-        String serverName = "localhost";
-        String dbname = "PokemonDB";
 
         Properties connectionProps = new Properties();
-        connectionProps.put("user", username);
-        connectionProps.put("password", password);
-
-        conn = DriverManager.getConnection("jdbc:" + dbms + "://" + serverName + ":" + portNumber + "/" + dbname, connectionProps);
+        connectionProps.put("user", Configure.username);
+        connectionProps.put("password", Configure.password);
+        String url = "jdbc:" + Configure.dbms + "://" + Configure.serverName + ":" + Configure.portNumber + "/" + Configure.dbname;
+        conn = DriverManager.getConnection(url, connectionProps);
         System.out.println("Connected to database");
         return conn;
     }

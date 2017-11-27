@@ -1,0 +1,6 @@
+username=pokemon
+password=pokebekthebest
+dbms=mysql
+portNumber=3306
+serverName=localhost
+dbname=PokemonDB
