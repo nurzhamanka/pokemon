@@ -1,4 +1,4 @@
-//package DatabasePart;
+package DatabasePart;
 
 import Model.Trainer;
 
@@ -13,7 +13,7 @@ public class DatabaseClient {
     /*
      * In this constructor, connect to the mysql database and exit if it doesn't work
      */
-    public DatabaseClient(String username, String password) {
+    public DatabaseClient() {
         try {
             conn = getConnection();
         } catch (SQLException e) {

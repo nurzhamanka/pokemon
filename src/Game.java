@@ -63,4 +63,14 @@ public class Game {
     public Trainer RegisterMenu() {
         return null;
     }
+
+    public void printChoices(String... choices) {
+
+        int i = 0;
+
+        for (String c : choices) {
+            System.out.print(i + ": ");
+            System.out.println(c);
+        }
+    }
 }
