@@ -1,7 +1,9 @@
 package DatabasePart;
 
 import Model.Configure;
+import Model.Pokemon;
 import Model.Trainer;
+import org.omg.CORBA.PolicyError;
 
 import java.sql.*;
 import java.util.Properties;
@@ -217,5 +219,15 @@ public class DatabaseClient {
         }
     }
     
+    Pokemon GenerateWildPokemon(String area) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
+    void CatchWildPokemon(Pokemon pokemon, Trainer trainer) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    Pokemon[] GetCatchedPokemons(Trainer trainer) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

@@ -26,6 +26,36 @@ public class Game {
         System.out.println("Welcome to $gamename$\n");
 
         this.LoginMenu();
+        while (MainMenu());
+    }
+
+    private boolean MainMenu() {
+        this.currentMenu = "Main menu";
+        int response = promptChoice("What would you like to do?",
+                "Catch pokemon", "See catched pokemons", "Exit");
+        switch (response) {
+            case 0:
+                CatchMenu();
+                break;
+            case 1:
+                GalleryMenu();
+                break;
+            case 2:
+                return false;
+        }
+        return true;
+
+    }
+
+    private void CatchMenu() {
+        String str = "Let's go outside. \n" +
+                "You hear grass trembling...\n";
+        throw new UnsupportedOperationException("Not supported yet.");
+
+    }
+
+    private void GalleryMenu() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     private void LoginMenu() {
@@ -122,7 +152,7 @@ public class Game {
     private void printChoices(String title, String... choices) {
         System.out.println(title);
         for (int i = 0; i < choices.length; i++) {
-            System.out.print((i) + ": ");
+            System.out.print("(" + i + ") ");
             System.out.println(choices[i]);
         }
     }

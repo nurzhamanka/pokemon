@@ -10,6 +10,7 @@ SET @OLD_SQL_MODE = @@SQL_MODE, SQL_MODE = 'TRADITIONAL,ALLOW_INVALID_DATES';
 -- -----------------------------------------------------
 -- Table `ABILITY`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `ABILITY`;
 CREATE TABLE IF NOT EXISTS `ABILITY` (
   `Name` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`Name`),
@@ -21,6 +22,7 @@ CREATE TABLE IF NOT EXISTS `ABILITY` (
 -- -----------------------------------------------------
 -- Table `AREA`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `AREA`;
 CREATE TABLE IF NOT EXISTS `AREA` (
   `Name`        VARCHAR(45) NOT NULL,
   `Occupiable`  TINYINT(1)  NOT NULL,
@@ -34,6 +36,7 @@ CREATE TABLE IF NOT EXISTS `AREA` (
 -- -----------------------------------------------------
 -- Table `TRAINER`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `TRAINER`;
 CREATE TABLE IF NOT EXISTS `TRAINER` (
   `ID`        INT(11)     NOT NULL AUTO_INCREMENT,
   `username`  VARCHAR(20) NOT NULL,
@@ -55,9 +58,11 @@ CREATE TABLE IF NOT EXISTS `TRAINER` (
   AUTO_INCREMENT = 2
   DEFAULT CHARACTER SET = latin1;
 
+
 -- -----------------------------------------------------
 -- Table `GYM`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `GYM`;
 CREATE TABLE IF NOT EXISTS `GYM` (
   `Name`      VARCHAR(45) NOT NULL,
   `Area_name` VARCHAR(45) NOT NULL,
@@ -82,6 +87,7 @@ CREATE TABLE IF NOT EXISTS `GYM` (
 -- -----------------------------------------------------
 -- Table `BATTLE`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `BATTLE`;
 CREATE TABLE IF NOT EXISTS `BATTLE` (
   `ID`          INT(11)     NOT NULL,
   `Trainer1_ID` INT(11)     NOT NULL,
@@ -114,6 +120,7 @@ CREATE TABLE IF NOT EXISTS `BATTLE` (
 -- -----------------------------------------------------
 -- Table `POKEMON`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `POKEMON`;
 CREATE TABLE IF NOT EXISTS `POKEMON` (
   `Name`        VARCHAR(20) NOT NULL,
   `Description` MEDIUMTEXT  NOT NULL,
@@ -127,6 +134,7 @@ CREATE TABLE IF NOT EXISTS `POKEMON` (
 -- -----------------------------------------------------
 -- Table `HAS_ABILITY`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `HAS_ABILITY`;
 CREATE TABLE IF NOT EXISTS `HAS_ABILITY` (
   `Pokemon_name` VARCHAR(45) NOT NULL,
   `Name`         VARCHAR(45) NOT NULL,
@@ -143,6 +151,7 @@ CREATE TABLE IF NOT EXISTS `HAS_ABILITY` (
 -- -----------------------------------------------------
 -- Table `PKM_OWNED`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `PKM_OWNED`;
 CREATE TABLE IF NOT EXISTS `PKM_OWNED` (
   `Name`       VARCHAR(45) NOT NULL,
   `Trainer_ID` INT(11)     NOT NULL,
@@ -167,6 +176,7 @@ CREATE TABLE IF NOT EXISTS `PKM_OWNED` (
 -- -----------------------------------------------------
 -- Table `PKM_WILD`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `PKM_WILD`;
 CREATE TABLE IF NOT EXISTS `PKM_WILD` (
   `Date_time`      DATETIME    NOT NULL,
   `Name`           VARCHAR(45) NOT NULL,
