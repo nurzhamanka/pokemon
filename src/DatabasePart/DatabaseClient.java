@@ -8,6 +8,8 @@ import org.omg.CORBA.PolicyError;
 import java.sql.*;
 import java.util.Properties;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public class DatabaseClient {
 
     private Connection conn = null;
@@ -99,7 +101,7 @@ public class DatabaseClient {
 
     }
 
-    public Trainer Authorize(String username, String password) throws Exception {
+    public Trainer authorize(String username, String password) throws Exception {
         Trainer trainer = getTrainer(username);
         if (trainer == null) {
             return null;
@@ -107,49 +109,6 @@ public class DatabaseClient {
         if (!password.equals(trainer.getPassword()))
             throw new Exception("Wrong password");
         return trainer;
-    }
-    
-    public String encounterPokemon() throws SQLException {
-
-        try {
-            // Execute a query
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT Name FROM POKEMON ORDER BY RAND() LIMIT 1");
-            return rs.getString("Name");
-
-        } catch (SQLException e) {
-            return null;
-        }
-
-    }
-
-    public void spotPokemon(String name, int aggr, int stam, String area) throws SQLException {
-
-        conn.setAutoCommit(false);
-
-        java.util.Date dt = new java.util.Date();
-        Timestamp currentTime = new java.sql.Timestamp(dt.getTime());
-
-        PreparedStatement insertWild = conn.prepareStatement("INSERT INTO PKM_WILD(Date_time, Name, Aggressiveness, Stamina, Area_name) VALUES " +
-                                                            "(?, ?, ?, ?, ?)");
-        insertWild.setTimestamp(1, currentTime);
-        insertWild.setString(2, name);
-        insertWild.setInt(3, aggr);
-        insertWild.setInt(4, stam);
-        insertWild.setString(5, area);
-
-        try {
-            insertWild.executeUpdate();
-            conn.commit();
-            System.out.println("SPOTTED POKEMON " + name + " at " + area);
-        } catch (SQLException exc) {
-            System.err.println("Transaction is being rolled back");
-            exc.printStackTrace();
-            conn.rollback();
-        } finally {
-            insertWild.close();
-            conn.setAutoCommit(true);
-        }
     }
 
     public void showTrainers(String area) throws SQLException {
@@ -219,15 +178,61 @@ public class DatabaseClient {
         }
     }
     
-    Pokemon GenerateWildPokemon(String area) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Pokemon generateWildPokemon(String area) {
+
+        String pkmName;
+
+        try {
+            // Execute a query
+            PreparedStatement stmt = conn.prepareStatement("SELECT Name FROM PKM_WILD WHERE Area_name = ? ORDER BY RAND() LIMIT 1");
+            stmt.setString(1, area);
+            ResultSet rs = stmt.executeQuery();
+            pkmName = rs.getString("Name");
+
+        } catch (SQLException e) {
+            return null;
+        }
+
+        int aggr = ThreadLocalRandom.current().nextInt(1, 10 + 1);
+        int stam = ThreadLocalRandom.current().nextInt(30, 100 + 1);
+
+        return new Pokemon(pkmName, aggr, stam, area);
+
+
     }
 
-    void CatchWildPokemon(Pokemon pokemon, Trainer trainer) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void catchWildPokemon(Pokemon pokemon, Trainer trainer, String nickname) throws Exception {
+
+        conn.setAutoCommit(false);
+
+        if (pokemon.getTrainer() == null) {
+            pokemon.setTrainer(trainer);
+            pokemon.setNickname(nickname);
+
+            PreparedStatement tamePokemon = conn.prepareStatement("INSERT INTO PKM_OWNED(Name, Trainer_ID, Nickname) " +
+                    "VALUES (?, ?, ?)");
+            tamePokemon.setString(1, pokemon.getName());
+            tamePokemon.setInt(2, trainer.getId());
+            tamePokemon.setString(3, nickname);
+
+            try {
+                tamePokemon.executeUpdate();
+                conn.commit();
+                System.out.println("TAMED " + pokemon.getName() + " at " + pokemon.getArea());
+            } catch (SQLException e) {
+                System.err.println("Transaction is being rolled back");
+                e.printStackTrace();
+                conn.rollback();
+            } finally {
+                tamePokemon.close();
+                conn.setAutoCommit(true);
+            }
+        } else {
+            throw new Exception("Error taming Pokemon");
+        }
     }
 
-    Pokemon[] GetCatchedPokemons(Trainer trainer) {
+    public Pokemon[] getCatchedPokemon(Trainer trainer) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }

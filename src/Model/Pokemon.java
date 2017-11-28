@@ -2,22 +2,22 @@ package Model;
 
 public class Pokemon {
     private String name;
+    private String area;
+    private Trainer trainer;
+    private String nickname;
     private int aggressiveness;
     private int stamina;
-    private String area;
-    private String trainer;
-    private String nickname;
-    private int date_time;
 
-    void Pokemon(int date_time, String name, int aggressiveness, int stamina, String area) {
-        this.setDate_time(date_time);
+    // encountering a wild Pokemon
+    public Pokemon(String name, int aggressiveness, int stamina, String area) {
         this.setName(name);
         this.setAggressiveness(aggressiveness);
         this.setStamina(stamina);
         this.setArea(area);
     }
 
-    void Pokemon(String name, String trainer, String nickname) {
+    // taming a Pokemon
+    public Pokemon(String name, Trainer trainer, String nickname) {
         this.setName(name);
         this.setTrainer(trainer);
         this.setNickname(nickname);
@@ -55,11 +55,11 @@ public class Pokemon {
         this.area = area;
     }
 
-    public String getTrainer() {
+    public Trainer getTrainer() {
         return trainer;
     }
 
-    public void setTrainer(String trainer) {
+    public void setTrainer(Trainer trainer) {
         this.trainer = trainer;
     }
 
@@ -69,13 +69,5 @@ public class Pokemon {
 
     public void setNickname(String nickname) {
         this.nickname = nickname;
-    }
-
-    public int getDate_time() {
-        return date_time;
-    }
-
-    public void setDate_time(int date_time) {
-        this.date_time = date_time;
     }
 }
