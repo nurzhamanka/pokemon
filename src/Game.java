@@ -1,7 +1,6 @@
 import DatabasePart.DatabaseClient;
 import Model.Configure;
 import Model.Trainer;
-import com.mysql.jdbc.jdbc2.optional.SuspendableXAConnection;
 
 import java.sql.SQLException;
 import java.util.InputMismatchException;
@@ -25,20 +24,20 @@ public class Game {
         dbc.showAllTrainers();
         System.out.println("Welcome to $gamename$\n");
 
-        this.LoginMenu();
-        while (MainMenu());
+        this.loginMenu();
+        while (mainMenu());
     }
 
-    private boolean MainMenu() {
+    private boolean mainMenu() {
         this.currentMenu = "Main menu";
         int response = promptChoice("What would you like to do?",
                 "Catch pokemon", "See catched pokemons", "Exit");
         switch (response) {
             case 0:
-                CatchMenu();
+                catchMenu();
                 break;
             case 1:
-                GalleryMenu();
+                galleryMenu();
                 break;
             case 2:
                 return false;
@@ -47,18 +46,18 @@ public class Game {
 
     }
 
-    private void CatchMenu() {
+    private void catchMenu() {
         String str = "Let's go outside. \n" +
                 "You hear grass trembling...\n";
         throw new UnsupportedOperationException("Not supported yet.");
 
     }
 
-    private void GalleryMenu() {
+    private void galleryMenu() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    private void LoginMenu() {
+    private void loginMenu() {
         this.currentMenu = "Login menu";
 
         this.player = null;
@@ -66,28 +65,28 @@ public class Game {
                 "login to existing account", "register new account");
         switch (response) {
             case 0:
-                this.player = AuthorizeMenu();
+                this.player = authorizeMenu();
                 break;
             case 1:
-                this.player = RegisterMenu();
+                this.player = registerMenu();
                 break;
         }
     }
 
-    private Trainer AuthorizeMenu() {
+    private Trainer authorizeMenu() {
         this.currentMenu = "Authorize menu";
         String login = getAnswer("Enter login: ");
         String password = getAnswer("Enter password: ");
 
         Trainer trainer = null;
         try {
-            trainer = dbc.Authorize(login, password);
+            trainer = dbc.authorize(login, password);
             if (trainer == null) {
                 System.out.println("There is no player with nickname: " + login);
             }
         } catch (Exception e) {
             System.out.println("Password is wrong. Try again");
-//            return AuthorizeMenu();
+//            return authorizeMenu();
         }
 
         if (trainer != null) {
@@ -98,12 +97,12 @@ public class Game {
         int response = promptChoice("Would you like to try again?", "try again", "cancel");
         System.out.println();
         if (response == 0)
-            return this.AuthorizeMenu();
+            return this.authorizeMenu();
         else
             return null;
     }
 
-    private Trainer RegisterMenu() {
+    private Trainer registerMenu() {
         this.currentMenu = "Register menu";
         System.out.println("We need some information about you");
         String login = getAnswer("nickname: ");
@@ -118,8 +117,10 @@ public class Game {
                 break;
             case 1:
                 area = "SHSS";
+                break;
             case 2:
                 area = "SENG";
+                break;
         }
         Trainer trainer = new Trainer(login, password, fname, lname, area);
         try {
