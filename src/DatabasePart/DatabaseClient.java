@@ -58,25 +58,6 @@ public class DatabaseClient {
 
     }
 
-    public void showTrainers(String area) throws SQLException {
-
-        try {
-            // Execute a query
-            PreparedStatement stmt = conn.prepareStatement("SELECT concat(FName, ' ', LName) as Name FROM TRAINER WHERE Area_name = ?");
-            stmt.setString(1, area);
-            ResultSet rs = stmt.executeQuery();
-
-            System.out.println("TRAINERS IN " + area + ":");
-            while (rs.next()) {
-                System.out.println(rs.getObject("Name"));
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-    }
-
     public Trainer getTrainer(String username) {
         PreparedStatement statement;
         try {
@@ -243,7 +224,6 @@ public class DatabaseClient {
 
         int result = 0;
 
-        // Execute a query
         PreparedStatement stmt = conn.prepareStatement("SELECT count(*) FROM PKM_OWNED " +
                 "JOIN TRAINER ON PKM_OWNED.Trainer_ID = TRAINER.ID " +
                 "WHERE ID = ?");
@@ -306,21 +286,85 @@ public class DatabaseClient {
     }
 
     ///by particular trainer
-    Pokemon getMostCatchedPokemon(Trainer trainer) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Pokemon getMostCatchedPokemon(Trainer trainer) throws SQLException {
+
+        // HANDLE TRAINERS WHO HAVE NOT CAUGHT ANY POKEMON
+        Pokemon pkm = null;
+
+        PreparedStatement stmt = conn.prepareStatement("SELECT p.Name as Name, count(*) as number " +
+                "FROM TRAINER t JOIN PKM_OWNED p ON t.ID = p.Trainer_ID " +
+                "WHERE t.ID = ? " +
+                "GROUP BY p.Name " +
+                "ORDER BY number DESC " +
+                "LIMIT 1");
+        stmt.setInt(1, trainer.getId());
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next())
+            pkm = new Pokemon(rs.getString("Name"), trainer, null);
+
+        return pkm;
     }
 
     ///by particular trainer
-    Pokemon randomNotCatchedPokemon(Trainer trainer) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Pokemon randomNotCatchedPokemon(Trainer trainer) throws SQLException {
+
+        Pokemon pkm = null;
+
+        PreparedStatement stmt = conn.prepareStatement("SELECT p.Name as Name " +
+                "FROM PKM_WILD " +
+                "WHERE p.Name NOT IN (SELECT o.Name " +
+                                        "FROM PKM_OWNED o " +
+                                        "JOIN TRAINER t ON o.Trainer_ID = t.ID " +
+                                        "WHERE t.ID = ?) " +
+                "ORDER BY RAND() " +
+                "LIMIT 1");
+        stmt.setInt(1, trainer.getId());
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next())
+            pkm = new Pokemon(rs.getString("Name"), null, null);
+
+        return pkm;
     }
 
     ///In general, across all trainers
-    Pokemon mostRarePokemon() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Pokemon mostRarePokemon() throws SQLException {
+
+        Pokemon pkm = null;
+
+        PreparedStatement stmt = conn.prepareStatement("SELECT p.Name as Name, count(*) as number " +
+                "FROM TRAINER t JOIN PKM_OWNED p ON t.ID = p.Trainer_ID " +
+                "GROUP BY p.Name " +
+                "ORDER BY number ASC " +
+                "LIMIT 1");
+
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next())
+            pkm = new Pokemon(rs.getString("Name"), null, null);
+
+        return pkm;
     }
 
-    List<String> usersInArea(String area) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public List<String> usersInArea(String area) throws SQLException {
+
+        LinkedList<String> users = new LinkedList<>();
+
+        PreparedStatement stmt = conn.prepareStatement("SELECT username FROM TRAINER WHERE Area_name = ?");
+        stmt.setString(1, area);
+
+        try {
+            // Execute a query
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                users.add(rs.getString("username"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            stmt.close();
+            return users;
+        }
     }
 }
