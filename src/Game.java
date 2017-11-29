@@ -37,16 +37,16 @@ public class Game {
             int response = promptChoice("What would you like to do?",
                     "Catch\t\t- Catch pokemon", "Pokedex\t\t- See catched pokemons", "Stats\t\t- See some statistics", "Exit");
             switch (response) {
-                case 0:
+                case 1:
                     println("Let's go outside.");
                     catchMenu();
                     bigLoop = true;
                     break;
-                case 1:
+                case 2:
                     ownedPokemonMenu();
                     bigLoop = true;
                     break;
-                case 2:
+                case 3:
                     statsMenu();
                     bigLoop = true;
                     break;
@@ -62,16 +62,16 @@ public class Game {
         boolean bigLoop = false;
         do {
             String str = "You are in " + this.player.getArea() + ".\n";
-            str += "You hear grass trembling...\n";
+            str += "You hear the grass tremble...\n";
             Pokemon pokemon = dbc.generateWildPokemon(this.player.getArea());
-            str += "It's a " + pokemon.getName() + "\n";
+            str += "It's a " + pokemon.getName() + "!\n";
             String prompt = "Your actions?";
             println(str);
             boolean smallLoop = false;
             do {
                 int response = promptChoice(prompt, "Catch\t\t- Catch him", "Leave\t\t- Search for another pokemon", "Move on\t\t- Move to another area", "Quit");
                 switch (response) {
-                    case 0:
+                    case 1:
                         if (tryToCatch(pokemon)) {
                             smallLoop = false;
                             bigLoop = true;
@@ -80,11 +80,11 @@ public class Game {
                             bigLoop = true;
                         }
                         break;
-                    case 1:
+                    case 2:
                         smallLoop = false;
                         bigLoop = true;
                         break;
-                    case 2:
+                    case 3:
                         moveMenu();
                         smallLoop = false;
                         bigLoop = true;
@@ -101,8 +101,8 @@ public class Game {
     private void moveMenu() {
         try {
             List<String> areas = dbc.listAreas();
-            int responce = promptChoice("Where you want to go?", areas.toArray(new String[areas.size()]));
-            String destination = areas.get(responce);
+            int response = promptChoice("Where you want to go?", areas.toArray(new String[areas.size()]));
+            String destination = areas.get(response);
             dbc.moveToArea(this.player, destination);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -130,7 +130,7 @@ public class Game {
             println("Pokeball failed you.");
             return false;
         }
-        println("You successfully catched him");
+        println("You successfully caught him");
         String nickname = getAnswer("Would you like to name him? (leave empty if not):\n");
         try {
             dbc.catchWildPokemon(pokemon, this.player, nickname);
@@ -156,7 +156,7 @@ public class Game {
                 }
             }
             int totalCatchedPokemons = dbc.getCatchedNumber(this.player);
-            printChoices("You catched " + totalCatchedPokemons + "pokemons:", str);
+            printChoices("You have caught " + totalCatchedPokemons + " pokemons:", str);
 
 
         } catch (SQLException e) {
@@ -172,10 +172,10 @@ public class Game {
             int response = promptChoice("What would you like to do?",
                     "Login\t\t- enter existing account", "Register\t- create new account");
             switch (response) {
-                case 0:
+                case 1:
                     this.player = authorizeMenu();
                     break;
-                case 1:
+                case 2:
                     this.player = registerMenu();
                     break;
             }
@@ -207,7 +207,7 @@ public class Game {
                 "Try again\t\t- Enter password again",
                 "Cancel\t\t- Try another authorization method");
         println();
-        if (response == 0)
+        if (response == 1)
             return this.authorizeMenu();
         else
             return null;
@@ -223,13 +223,13 @@ public class Game {
         String area = null;
         int response = promptChoice("Enter starting area", "SST", "SHSS", "SENG");
         switch (response) {
-            case 0:
+            case 1:
                 area = "SST";
                 break;
-            case 1:
+            case 2:
                 area = "SHSS";
                 break;
-            case 2:
+            case 3:
                 area = "SENG";
                 break;
         }
@@ -251,12 +251,12 @@ public class Game {
     private int promptChoice(String title, String... choices) {
         printChoices(title, choices);
         int choice = -1;
-        while (!(0 <= choice && choice < choices.length)) { // will loop until there's a valid age
+        while (!(1 <= choice && choice <= choices.length)) { // will loop until there's a valid age
             try {
                 String input = scanner.nextLine();
                 choice = Integer.parseInt(input);
             } catch (Exception e) {
-                println("Enter value between 0 and " + (choices.length - 1) + ". Try again.");
+                println("Enter value between 1 and " + (choices.length) + ". Try again.");
             }
         }
         return choice;
@@ -265,7 +265,7 @@ public class Game {
     static private void printChoices(String title, String... choices) {
         println(title);
         for (int i = 0; i < choices.length; i++) {
-            print("(" + i + ") ");
+            print("(" + (i+1) + ") ");
             println(choices[i]);
         }
     }
