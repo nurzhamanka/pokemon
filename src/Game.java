@@ -102,7 +102,7 @@ public class Game {
         try {
             List<String> areas = dbc.listAreas();
             int response = promptChoice("Where you want to go?", areas.toArray(new String[areas.size()]));
-            String destination = areas.get(response);
+            String destination = areas.get(response - 1);
             dbc.moveToArea(this.player, destination);
         } catch (SQLException e) {
             e.printStackTrace();
