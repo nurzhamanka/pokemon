@@ -95,7 +95,7 @@ public class DatabaseClient {
             throw new Exception("Wrong password");
         return trainer;
     }
-    
+
     public Pokemon generateWildPokemon(String area) {
         String pkmName;
 
@@ -165,7 +165,7 @@ public class DatabaseClient {
 
         PreparedStatement stmt = conn.prepareStatement("SELECT count(*) FROM PKM_OWNED " +
                 "JOIN TRAINER ON PKM_OWNED.Trainer_ID = TRAINER.ID " +
-                "WHERE ID = ?");
+                "WHERE TRAINER.ID = ?");
         stmt.setInt(1, trainer.getId());
         ResultSet rs = stmt.executeQuery();
 
