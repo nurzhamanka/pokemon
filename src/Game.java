@@ -27,6 +27,7 @@ public class Game {
         println("Welcome to $gamename$\n");
 
         this.loginMenu();
+        println("You're in " + this.player.getArea());
         while (true) {
             if (!mainMenu())
                 break;
@@ -57,27 +58,36 @@ public class Game {
         String str = "You hear grass trembling...\n";
         Pokemon pokemon = dbc.generateWildPokemon(this.player.getArea());
         str += "It's a " + pokemon.getName() + "\n";
-        str += "Your actions?\n";
-        while(true) {
-            int response = promptChoice(str, "Catch him", "Move on", "Quit");
-            switch (response) {
-                case 0:
-                    if (tryToCatch(pokemon)) {
-                        break;
-                    }
-                case 1:
+        String prompt = "Your actions?";
+        println(str);
+        boolean repeat = true;
+        do {
+            int response = promptChoice(prompt, "Catch him", "Move on", "Quit");
+            if (response == 0) {
+                if (tryToCatch(pokemon)) {
                     catchMenu();
-                    return;
-                case 2:
-                    return;
+                    repeat = false;
+                }
+            } else if (response == 1) {
+                catchMenu();
+                return;
+            } else if (response == 2) {
+                return;
             }
-        }
+        } while (repeat);
     }
 
     private boolean tryToCatch(Pokemon pokemon) {
         println("You're trying to catch " + pokemon.getName());
-        double successRate = 1 - (pokemon.getStamina() / 3) * (1 / (pokemon.getAggressiveness() + 1));
+        double st = pokemon.getStamina() / (Configure.maxStamina + .0001);
+        double ag = (pokemon.getAggressiveness() + 1.0) / (Configure.maxAggressiveness);
+        double successRate = 1 - st * ag;
         double flip = Math.random();
+
+        System.out.print(pokemon.getStamina() + ":" + pokemon.getAggressiveness() + " = " );
+        System.out.print(st + "*" + ag + "=");
+        System.out.println(successRate + "/" + flip);
+
         pokemon.decStamina();
         boolean success = flip <= successRate;
         if (!success) {

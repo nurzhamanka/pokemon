@@ -188,8 +188,9 @@ public class DatabaseClient {
             PreparedStatement stmt = conn.prepareStatement("SELECT Name FROM PKM_WILD WHERE Area_name = ? ORDER BY RAND() LIMIT 1");
             stmt.setString(1, area);
             ResultSet rs = stmt.executeQuery();
-            if (rs.getFetchSize() == 0)
-                return null;
+//            if (rs.getFetchSize() == 0)
+//                return null;
+            rs.next();
             pkmName = rs.getString("Name");
 
         } catch (SQLException e) {
@@ -198,8 +199,8 @@ public class DatabaseClient {
             return null;
         }
 
-        int aggr = ThreadLocalRandom.current().nextInt(1, 10 + 1);
-        int stam = ThreadLocalRandom.current().nextInt(1, 3 + 1);
+        int aggr = ThreadLocalRandom.current().nextInt(1, Configure.maxAggressiveness + 1);
+        int stam = ThreadLocalRandom.current().nextInt(1, Configure.maxStamina + 1);
 
         return new Pokemon(pkmName, aggr, stam, area);
     }

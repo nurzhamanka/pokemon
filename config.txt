@@ -4,3 +4,5 @@ dbms=mysql
 portNumber=80
 serverName=46.101.171.158
 dbname=manabayev_alibek
+maxAggressiveness=10
+maxStamina=5

@@ -13,14 +13,10 @@ public class Configure {
     static public String portNumber;
     static public String serverName;
     static public String dbname;
+    static public int maxAggressiveness;
+    public static int maxStamina;
 
     static public void loadConfigure(String filename) {
-        username = null;
-        password = null;
-        dbms = null;
-        portNumber = null;
-        serverName = null;
-        dbname = null;
         try {
             Properties properties = new Properties();
             InputStream in;
@@ -32,8 +28,22 @@ public class Configure {
             portNumber = properties.getProperty("portNumber");
             serverName = properties.getProperty("serverName");
             dbname = properties.getProperty("dbname");
+            maxAggressiveness = Integer.parseInt(properties.getProperty("maxAggressiveness"));
+            maxStamina = Integer.parseInt(properties.getProperty("maxStamina"));
         } catch (IOException e) {
+            loadDefaultValues();
             e.printStackTrace();
         }
+    }
+
+    static void loadDefaultValues() {
+        username = null;
+        password = null;
+        dbms = null;
+        portNumber = null;
+        serverName = null;
+        dbname = null;
+        maxAggressiveness = 10;
+        maxStamina = 5;
     }
 }
