@@ -100,54 +100,6 @@ public class DatabaseClient {
             throw new Exception("Wrong password");
         return trainer;
     }
-
-    public void openPokedex(String name) throws SQLException {
-
-        try {
-            // Get a Pokemon's name, description and type
-            PreparedStatement pokemon = conn.prepareStatement("SELECT Name, Description, Type FROM POKEMON " +
-                    "LEFT JOIN POKEMON_TYPE ON POKEMON.Name = POKEMON_TYPE.Pkm_name " +
-                    "WHERE Name = ?");
-            pokemon.setString(1, name);
-            ResultSet rsPokemon = pokemon.executeQuery();
-
-            PreparedStatement abilities = conn.prepareStatement("SELECT a.Name as aName FROM (POKEMON " +
-                                                                "JOIN HAS ON POKEMON.Name = HAS.Pokemon_name) " +
-                                                                "JOIN ABILITY a ON Ability_name = a.Name " +
-                                                                "WHERE POKEMON.Name = ?");
-            abilities.setString(1, name);
-            ResultSet rsAbilities = abilities.executeQuery();
-
-            System.out.println("POKEDEX DATA FOR " + name + ":");
-
-            rsPokemon.next();
-            System.out.println("Name: " + rsPokemon.getString("Name"));
-            System.out.println("Description: " + rsPokemon.getString("Description"));
-
-            System.out.print("Type: ");
-
-            if (rsPokemon.getString("Type") != null)
-                System.out.print(rsPokemon.getString("Type"));
-            else System.out.print("None");
-            while (rsPokemon.next()) {
-                System.out.print(" / " + rsPokemon.getString("Type"));
-            }
-            System.out.println();
-
-            System.out.print("Abilities: ");
-
-            if (rsAbilities.next())
-                System.out.print(rsAbilities.getString("aName"));
-            else System.out.print("None");
-            while (rsAbilities.next()) {
-                System.out.print(", " + rsAbilities.getString("aName"));
-            }
-            System.out.println("\n");
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
     
     public Pokemon generateWildPokemon(String area) {
 
@@ -261,12 +213,16 @@ public class DatabaseClient {
         stmt.setString(1, area);
         stmt.setInt(2, trainer.getId());
 
-        executor(stmt, true);
+        if (executor(stmt, true)) {
+            trainer.setArea(area);
+        }
 
     }
 
     // performs updates or queries
-    private void executor(PreparedStatement stmt, boolean update) throws SQLException {
+    private boolean executor(PreparedStatement stmt, boolean update) throws SQLException {
+
+        boolean flag = false;
 
         try {
             if (update)
@@ -274,14 +230,16 @@ public class DatabaseClient {
             else
                 stmt.executeQuery();
             conn.commit();
-
+            flag = true;
         } catch (SQLException e) {
             System.err.println("Transaction is being rolled back");
             e.printStackTrace();
             conn.rollback();
+            flag = false;
         } finally {
             stmt.close();
             conn.setAutoCommit(true);
+            return flag;
         }
     }
 
