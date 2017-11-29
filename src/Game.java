@@ -25,7 +25,6 @@ public class Game {
         println("Welcome to $gamename$\n");
 
         this.loginMenu();
-        println("You're in " + this.player.getArea());
         mainMenu();
         println("Bye:)");
     }
@@ -52,8 +51,13 @@ public class Game {
 //        this.currentMenu = "Main menu";
         boolean bigLoop = false;
         do {
+            println("You are in " + this.player.getArea() + ".");
             int response = promptChoice("What would you like to do?",
-                    "Catch\t\t- Catch pokemon", "Pokedex\t\t- See caught pokemons", "Stats\t\t- See some statistics", "Exit");
+                    "Catch\t\t- Catch pokemon",
+                    "Move\t\t- Move to another area",
+                    "Pokedex\t\t- See caught pokemons",
+                    "Stats\t\t- See some statistics",
+                    "Exit");
             switch (response) {
                 case 1:
                     println("Let's go outside.");
@@ -61,10 +65,14 @@ public class Game {
                     bigLoop = true;
                     break;
                 case 2:
-                    ownedPokemonMenu();
+                    moveMenu();
                     bigLoop = true;
                     break;
                 case 3:
+                    ownedPokemonMenu();
+                    bigLoop = true;
+                    break;
+                case 4:
                     statsMenu();
                     bigLoop = true;
                     break;
@@ -183,8 +191,7 @@ public class Game {
     private void catchMenu() {
         boolean bigLoop = false;
         do {
-            String str = "You are in " + this.player.getArea() + ".\n";
-            str += "You hear the grass tremble...\n";
+            String str = "You hear the grass tremble...\n";
             Pokemon pokemon = dbc.generateWildPokemon(this.player.getArea());
             str += "It's a " + pokemon.getName() + "!\n";
             String prompt = "Your actions?";
@@ -196,10 +203,10 @@ public class Game {
                     case 1:
                         if (tryToCatch(pokemon)) {
                             smallLoop = false;
-                            bigLoop = true;
+                            bigLoop = false;
                         } else {
                             smallLoop = true;
-                            bigLoop = true;
+                            bigLoop = false;
                         }
                         break;
                     case 2:
@@ -227,9 +234,9 @@ public class Game {
         double successRate = 1 - st * ag;
         double flip = Math.random();
 
-        System.out.print(pokemon.getStamina() + ":" + pokemon.getAggressiveness() + " = ");
-        System.out.print(st + "*" + ag + "=");
-        System.out.println(successRate + "/" + flip);
+//        System.out.print(pokemon.getStamina() + ":" + pokemon.getAggressiveness() + " = ");
+//        System.out.print(st + "*" + ag + "=");
+//        System.out.println(successRate + "/" + flip);
 
         pokemon.decStamina();
         boolean success = flip <= successRate;
@@ -255,7 +262,7 @@ public class Game {
         try {
             List<String> areas = dbc.listAreas();
             int response = promptChoice("Where you want to go?", areas.toArray(new String[areas.size()]));
-            String destination = areas.get(response);
+            String destination = areas.get(response - 1);
             dbc.moveToArea(this.player, destination);
         } catch (SQLException e) {
             e.printStackTrace();
