@@ -61,16 +61,18 @@ public class Game {
         this.currentMenu = "Login menu";
 
         this.player = null;
-        int response = promptChoice("What would you like to do?",
-                "login to existing account", "register new account");
-        switch (response) {
-            case 0:
-                this.player = authorizeMenu();
-                break;
-            case 1:
-                this.player = registerMenu();
-                break;
-        }
+        do {
+            int response = promptChoice("What would you like to do?",
+                    "login to existing account", "register new account");
+            switch (response) {
+                case 0:
+                    this.player = authorizeMenu();
+                    break;
+                case 1:
+                    this.player = registerMenu();
+                    break;
+            }
+        } while (this.player == null);
     }
 
     private Trainer authorizeMenu() {
@@ -134,7 +136,7 @@ public class Game {
 
     private String getAnswer(String str) {
         System.out.print(str);
-        return scanner.next();
+        return scanner.nextLine();
     }
 
     private int promptChoice(String title, String... choices) {
