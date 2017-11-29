@@ -3,9 +3,9 @@ package DatabasePart;
 import Model.Configure;
 import Model.Pokemon;
 import Model.Trainer;
-import org.omg.CORBA.PolicyError;
 
 import java.sql.*;
+import java.util.LinkedList;
 import java.util.Properties;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -53,6 +53,25 @@ public class DatabaseClient {
                 System.out.print(rs.getMetaData().getColumnLabel(i) + ": " + rs.getObject(i) + ", ");
             }
             System.out.println("");
+        }
+
+    }
+
+    public void showTrainers(String area) throws SQLException {
+
+        try {
+            // Execute a query
+            PreparedStatement stmt = conn.prepareStatement("SELECT concat(FName, ' ', LName) as Name FROM TRAINER WHERE Area_name = ?");
+            stmt.setString(1, area);
+            ResultSet rs = stmt.executeQuery();
+
+            System.out.println("TRAINERS IN " + area + ":");
+            while (rs.next()) {
+                System.out.println(rs.getObject("Name"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
     }
@@ -109,25 +128,6 @@ public class DatabaseClient {
         if (!password.equals(trainer.getPassword()))
             throw new Exception("Wrong password");
         return trainer;
-    }
-
-    public void showTrainers(String area) throws SQLException {
-
-        try {
-            // Execute a query
-            PreparedStatement stmt = conn.prepareStatement("SELECT concat(FName, ' ', LName) as Name FROM TRAINER WHERE Area_name = ?");
-            stmt.setString(1, area);
-            ResultSet rs = stmt.executeQuery();
-
-            System.out.println("TRAINERS IN " + area + ":");
-            while (rs.next()) {
-                System.out.println(rs.getObject("Name"));
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
     }
 
     public void openPokedex(String name) throws SQLException {
@@ -218,7 +218,7 @@ public class DatabaseClient {
             try {
                 tamePokemon.executeUpdate();
                 conn.commit();
-                System.out.println("TAMED " + pokemon.getName() + " at " + pokemon.getArea());
+                //System.out.println("TAMED " + pokemon.getName() + " at " + pokemon.getArea());
             } catch (SQLException e) {
                 System.err.println("Transaction is being rolled back");
                 e.printStackTrace();
@@ -232,7 +232,44 @@ public class DatabaseClient {
         }
     }
 
-    public Pokemon[] getCatchedPokemon(Trainer trainer) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public LinkedList<Pokemon> getCatchedPokemon(Trainer trainer) throws SQLException {
+
+        LinkedList<Pokemon> pokemons = new LinkedList<>();
+
+        PreparedStatement stmt = conn.prepareStatement("SELECT Name, Nickname FROM PKM_OWNED " +
+                                                        "JOIN TRAINER ON PKM_OWNED.Trainer_ID = TRAINER.ID " +
+                                                        "WHERE ID = ?");
+        stmt.setInt(1, trainer.getId());
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) {
+            String pkmName = rs.getString("Name");
+            String pkmNickname = rs.getString("Nickname");
+            Pokemon pkm = new Pokemon(pkmName, trainer, pkmNickname);
+            pokemons.add(pkm);
+        }
+
+        return pokemons;
+
     }
+
+    public int getCatchedNumber(Trainer trainer) throws SQLException {
+
+        int result = 0;
+
+        // Execute a query
+        PreparedStatement stmt = conn.prepareStatement("SELECT count(*) FROM PKM_OWNED " +
+                "JOIN TRAINER ON PKM_OWNED.Trainer_ID = TRAINER.ID " +
+                "WHERE ID = ?");
+        stmt.setInt(1, trainer.getId());
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) {
+            result = rs.getInt(1);
+        }
+
+        return result;
+    }
+
+
 }
