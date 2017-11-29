@@ -106,18 +106,7 @@ public class DatabaseClient {
         trainerCreate.setString(4, trainer.getLastName());
         trainerCreate.setString(5, trainer.getArea());
 
-        try {
-            trainerCreate.executeUpdate();
-            conn.commit();
-            System.out.println("REGISTERED " + trainer.getFirstName() + " " + trainer.getLastName() + " as " + trainer.getUsername());
-        } catch (SQLException exc) {
-            System.err.println("Transaction is being rolled back");
-            exc.printStackTrace();
-            conn.rollback();
-        } finally {
-            trainerCreate.close();
-            conn.setAutoCommit(true);
-        }
+        executor(trainerCreate, true);
 
     }
 
@@ -224,18 +213,7 @@ public class DatabaseClient {
         tamePokemon.setInt(2, trainer.getId());
         tamePokemon.setString(3, nickname);
 
-        try {
-            tamePokemon.executeUpdate();
-            conn.commit();
-            // System.out.println("TAMED " + pokemon.getName() + " at " + pokemon.getArea());
-        } catch (SQLException e) {
-            System.err.println("Transaction is being rolled back");
-            e.printStackTrace();
-            conn.rollback();
-        } finally {
-            tamePokemon.close();
-            conn.setAutoCommit(true);
-        }
+        executor(tamePokemon, true);
     }
 
     public List<Pokemon> getCatchedPokemon(Trainer trainer) throws SQLException {
@@ -275,6 +253,42 @@ public class DatabaseClient {
         }
 
         return result;
+    }
+
+    public List<String> listAreas() {
+        throw new UnsupportedOperationException();
+    }
+
+    public void moveToArea(Trainer trainer, String area) throws SQLException {
+
+        conn.setAutoCommit(false);
+
+        PreparedStatement stmt = conn.prepareStatement("UPDATE TRAINER SET Area_name = ? WHERE ID = ?");
+        stmt.setString(1, area);
+        stmt.setInt(2, trainer.getId());
+
+        executor(stmt, true);
+
+    }
+
+    // performs updates or queries
+    private void executor(PreparedStatement stmt, boolean update) throws SQLException {
+
+        try {
+            if (update)
+                stmt.executeUpdate();
+            else
+                stmt.executeQuery();
+            conn.commit();
+
+        } catch (SQLException e) {
+            System.err.println("Transaction is being rolled back");
+            e.printStackTrace();
+            conn.rollback();
+        } finally {
+            stmt.close();
+            conn.setAutoCommit(true);
+        }
     }
 
 
