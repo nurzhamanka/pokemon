@@ -44,7 +44,7 @@ public class Game {
                 catchMenu();
                 break;
             case 1:
-                galleryMenu();
+                ownedPokemonMenu();
                 break;
             case 2:
                 return false;
@@ -96,7 +96,7 @@ public class Game {
         return true;
     }
 
-    private void galleryMenu() {
+    private void ownedPokemonMenu() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
