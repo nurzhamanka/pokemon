@@ -35,7 +35,7 @@ public class Game {
         boolean bigLoop = false;
         do {
             int response = promptChoice("What would you like to do?",
-                    "Catch\t\t- Catch pokemon", "Pokedex\t\t- See catched pokemons", "Stats\t\t- See some statistics", "Exit");
+                    "Catch\t\t- Catch pokemon", "Pokedex\t\t- See caught pokemons", "Stats\t\t- See some statistics", "Exit");
             switch (response) {
                 case 1:
                     println("Let's go outside.");
@@ -112,8 +112,8 @@ public class Game {
     private void statsMenu() {
         println("There is some statistic for you.");
         try {
-            Pokemon mostCaught = dbc.getMostCatchedPokemon(this.player);
-            Pokemon notCaught = dbc.randomNotCatchedPokemon(this.player);
+            Pokemon mostCaught = dbc.getMostCaughtPokemon(this.player);
+            Pokemon notCaught = dbc.randomNotCaughtPokemon(this.player);
             Pokemon mostRare = dbc.mostRarePokemon();
             List<String> users = dbc.usersInArea(this.player.getArea());
             String usersStr = String.join(", ", users);
@@ -160,7 +160,7 @@ public class Game {
 
     private void ownedPokemonMenu() {
         try {
-            List<Pokemon> pokemons = dbc.getCatchedPokemon(this.player);
+            List<Pokemon> pokemons = dbc.getCaughtPokemon(this.player);
             int size = pokemons.size();
             String[] str = new String[size];
             for (int i = 0; i < size; i++) {
@@ -171,8 +171,8 @@ public class Game {
                     str[i] = poke.getNickname() + "\t\t(" + poke.getName() + ")";
                 }
             }
-            int totalCatchedPokemons = dbc.getCatchedNumber(this.player);
-            printChoices("You have caught " + totalCatchedPokemons + " pokemons:", str);
+            int totalCaughtPokemons = dbc.getCaughtNumber(this.player);
+            printChoices("You have caught " + totalCaughtPokemons + " pokemons:", str);
 
 
         } catch (SQLException e) {

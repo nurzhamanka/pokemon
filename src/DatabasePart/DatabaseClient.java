@@ -139,7 +139,7 @@ public class DatabaseClient {
         executor(tamePokemon, true);
     }
 
-    public List<Pokemon> getCatchedPokemon(Trainer trainer) throws SQLException {
+    public List<Pokemon> getCaughtPokemon(Trainer trainer) throws SQLException {
         LinkedList<Pokemon> pokemons = new LinkedList<>();
 
         PreparedStatement stmt = conn.prepareStatement("SELECT Name, Nickname\n" +
@@ -160,7 +160,7 @@ public class DatabaseClient {
 
     }
 
-    public int getCatchedNumber(Trainer trainer) throws SQLException {
+    public int getCaughtNumber(Trainer trainer) throws SQLException {
         int result = 0;
 
         PreparedStatement stmt = conn.prepareStatement("SELECT count(*) FROM PKM_OWNED " +
@@ -227,7 +227,7 @@ public class DatabaseClient {
     }
 
     ///by particular trainer
-    public Pokemon getMostCatchedPokemon(Trainer trainer) throws SQLException {
+    public Pokemon getMostCaughtPokemon(Trainer trainer) throws SQLException {
         // HANDLE TRAINERS WHO HAVE NOT CAUGHT ANY POKEMON
         Pokemon pkm = null;
 
@@ -247,7 +247,7 @@ public class DatabaseClient {
     }
 
     ///by particular trainer
-    public Pokemon randomNotCatchedPokemon(Trainer trainer) throws SQLException {
+    public Pokemon randomNotCaughtPokemon(Trainer trainer) throws SQLException {
         Pokemon pkm = null;
 
         PreparedStatement stmt = conn.prepareStatement("SELECT p.Name AS Name\n" +
