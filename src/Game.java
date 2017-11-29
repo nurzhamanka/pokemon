@@ -1,9 +1,11 @@
 import DatabasePart.DatabaseClient;
 import Model.Configure;
+import Model.Pokemon;
 import Model.Trainer;
 
 import java.sql.SQLException;
 import java.util.InputMismatchException;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Game {
@@ -22,10 +24,14 @@ public class Game {
 
     void play() throws Exception {
         dbc.showAllTrainers();
-        System.out.println("Welcome to $gamename$\n");
+        println("Welcome to $gamename$\n");
 
         this.loginMenu();
-        while (mainMenu());
+        while (true) {
+            if (!mainMenu())
+                break;
+        }
+        println("Bye:)");
     }
 
     private boolean mainMenu() {
@@ -34,6 +40,7 @@ public class Game {
                 "Catch pokemon", "See catched pokemons", "Exit");
         switch (response) {
             case 0:
+                println("Let's go outside.");
                 catchMenu();
                 break;
             case 1:
@@ -47,10 +54,46 @@ public class Game {
     }
 
     private void catchMenu() {
-        String str = "Let's go outside. \n" +
-                "You hear grass trembling...\n";
-        throw new UnsupportedOperationException("Not supported yet.");
+        String str = "You hear grass trembling...\n";
+        Pokemon pokemon = dbc.generateWildPokemon(this.player.getArea());
+        str += "It's a " + pokemon.getName() + "\n";
+        str += "Your actions?\n";
+        while(true) {
+            int response = promptChoice(str, "Catch him", "Move on", "Quit");
+            switch (response) {
+                case 0:
+                    if (tryToCatch(pokemon)) {
+                        break;
+                    }
+                case 1:
+                    catchMenu();
+                    return;
+                case 2:
+                    return;
+            }
+        }
+    }
 
+    private boolean tryToCatch(Pokemon pokemon) {
+        println("You're trying to catch " + pokemon.getName());
+        double successRate = 1 - (pokemon.getStamina() / 3) * (1 / (pokemon.getAggressiveness() + 1));
+        double flip = Math.random();
+        pokemon.decStamina();
+        boolean success = flip <= successRate;
+        if (!success) {
+            println("Pokeball failed you.");
+            return false;
+        }
+        println("You successfully catched him");
+        String nickname = getAnswer("Would you like to name him? (leave empty if not):\n");
+        try {
+            dbc.catchWildPokemon(pokemon, this.player, nickname);
+        } catch (Exception e) {
+//            e.printStackTrace();
+            println("Some database error occurred");
+            return false;
+        }
+        return true;
     }
 
     private void galleryMenu() {
@@ -84,20 +127,20 @@ public class Game {
         try {
             trainer = dbc.authorize(login, password);
             if (trainer == null) {
-                System.out.println("There is no player with nickname: " + login);
+                println("There is no player with nickname: " + login);
             }
         } catch (Exception e) {
-            System.out.println("Password is wrong. Try again");
+            println("Password is wrong. Try again");
 //            return authorizeMenu();
         }
 
         if (trainer != null) {
-            System.out.println();
-            System.out.println("Hello, " + trainer.getUsername());
+            println();
+            println("Hello, " + trainer.getUsername());
             return trainer;
         }
         int response = promptChoice("Would you like to try again?", "try again", "cancel");
-        System.out.println();
+        println();
         if (response == 0)
             return this.authorizeMenu();
         else
@@ -106,7 +149,7 @@ public class Game {
 
     private Trainer registerMenu() {
         this.currentMenu = "Register menu";
-        System.out.println("We need some information about you");
+        println("We need some information about you");
         String login = getAnswer("nickname: ");
         String password = getAnswer("password: ");
         String fname = getAnswer("First name: ");
@@ -129,13 +172,13 @@ public class Game {
             dbc.registerUser(trainer);
         } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("Some error happened. " + e.getErrorCode());
+            println("Some error happened. " + e.getErrorCode());
         }
         return trainer;
     }
 
     private String getAnswer(String str) {
-        System.out.print(str);
+        print(str);
         return scanner.nextLine();
     }
 
@@ -144,19 +187,32 @@ public class Game {
         int choice = -1;
         while (!(0 <= choice && choice < choices.length)) { // will loop until there's a valid age
             try {
-                choice = scanner.nextInt();
-            } catch (InputMismatchException e) {
-                System.out.println("Enter value between 0 and " + (choices.length - 1) + ". Try again.");
+                String input = scanner.nextLine();
+                choice = Integer.parseInt(input);
+            } catch (Exception e) {
+                println("Enter value between 0 and " + (choices.length - 1) + ". Try again.");
             }
         }
         return choice;
     }
 
-    private void printChoices(String title, String... choices) {
-        System.out.println(title);
+    static private void printChoices(String title, String... choices) {
+        println(title);
         for (int i = 0; i < choices.length; i++) {
-            System.out.print("(" + i + ") ");
-            System.out.println(choices[i]);
+            print("(" + i + ") ");
+            println(choices[i]);
         }
+    }
+
+    static private void print(String string) {
+        System.out.print(string);
+    }
+
+    static private void println(String string) {
+        print(string + "\n");
+    }
+
+    static private void println() {
+        println("");
     }
 }

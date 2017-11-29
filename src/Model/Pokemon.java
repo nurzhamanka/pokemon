@@ -14,6 +14,9 @@ public class Pokemon {
         this.setAggressiveness(aggressiveness);
         this.setStamina(stamina);
         this.setArea(area);
+
+        this.setTrainer(null);
+        this.setNickname(null);
     }
 
     // taming a Pokemon
@@ -21,6 +24,10 @@ public class Pokemon {
         this.setName(name);
         this.setTrainer(trainer);
         this.setNickname(nickname);
+
+        this.setAggressiveness(0);
+        this.setStamina(0);
+        this.setArea(null);
     }
 
     public String getName() {
@@ -69,5 +76,10 @@ public class Pokemon {
 
     public void setNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public void decStamina() {
+        if (this.stamina > 0)
+            this.stamina--;
     }
 }

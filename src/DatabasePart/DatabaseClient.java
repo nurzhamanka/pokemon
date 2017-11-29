@@ -5,6 +5,7 @@ import Model.Pokemon;
 import Model.Trainer;
 
 import java.sql.*;
+import java.util.List;
 import java.util.Properties;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -186,52 +187,56 @@ public class DatabaseClient {
             PreparedStatement stmt = conn.prepareStatement("SELECT Name FROM PKM_WILD WHERE Area_name = ? ORDER BY RAND() LIMIT 1");
             stmt.setString(1, area);
             ResultSet rs = stmt.executeQuery();
+            if (rs.getFetchSize() == 0)
+                return null;
             pkmName = rs.getString("Name");
 
         } catch (SQLException e) {
+            e.printStackTrace();
+//            System.out.println();
             return null;
         }
 
         int aggr = ThreadLocalRandom.current().nextInt(1, 10 + 1);
-        int stam = ThreadLocalRandom.current().nextInt(30, 100 + 1);
+        int stam = ThreadLocalRandom.current().nextInt(1, 3 + 1);
 
         return new Pokemon(pkmName, aggr, stam, area);
-
-
     }
 
     public void catchWildPokemon(Pokemon pokemon, Trainer trainer, String nickname) throws Exception {
 
         conn.setAutoCommit(false);
 
-        if (pokemon.getTrainer() == null) {
-            pokemon.setTrainer(trainer);
-            pokemon.setNickname(nickname);
-
-            PreparedStatement tamePokemon = conn.prepareStatement("INSERT INTO PKM_OWNED(Name, Trainer_ID, Nickname) " +
-                    "VALUES (?, ?, ?)");
-            tamePokemon.setString(1, pokemon.getName());
-            tamePokemon.setInt(2, trainer.getId());
-            tamePokemon.setString(3, nickname);
-
-            try {
-                tamePokemon.executeUpdate();
-                conn.commit();
-                System.out.println("TAMED " + pokemon.getName() + " at " + pokemon.getArea());
-            } catch (SQLException e) {
-                System.err.println("Transaction is being rolled back");
-                e.printStackTrace();
-                conn.rollback();
-            } finally {
-                tamePokemon.close();
-                conn.setAutoCommit(true);
-            }
-        } else {
+        if (pokemon.getTrainer() != null) {
             throw new Exception("Error taming Pokemon");
+        }
+        if (nickname == null || nickname.isEmpty()) {
+            nickname = pokemon.getName();
+        }
+        pokemon.setTrainer(trainer);
+        pokemon.setNickname(nickname);
+
+        PreparedStatement tamePokemon = conn.prepareStatement("INSERT INTO PKM_OWNED(Name, Trainer_ID, Nickname) " +
+                "VALUES (?, ?, ?)");
+        tamePokemon.setString(1, pokemon.getName());
+        tamePokemon.setInt(2, trainer.getId());
+        tamePokemon.setString(3, nickname);
+
+        try {
+            tamePokemon.executeUpdate();
+            conn.commit();
+            System.out.println("TAMED " + pokemon.getName() + " at " + pokemon.getArea());
+        } catch (SQLException e) {
+            System.err.println("Transaction is being rolled back");
+            e.printStackTrace();
+            conn.rollback();
+        } finally {
+            tamePokemon.close();
+            conn.setAutoCommit(true);
         }
     }
 
-    public Pokemon[] getCatchedPokemon(Trainer trainer) {
+    public List<Pokemon> getCatchedPokemon(Trainer trainer) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }
