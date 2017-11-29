@@ -30,6 +30,24 @@ public class Game {
         println("Bye:)");
     }
 
+    private void loginMenu() {
+//        this.currentMenu = "Login menu";
+
+        this.player = null;
+        do {
+            int response = promptChoice("What would you like to do?",
+                    "Login\t\t- enter existing account", "Register\t- create new account");
+            switch (response) {
+                case 1:
+                    this.player = authorizeMenu();
+                    break;
+                case 2:
+                    this.player = registerMenu();
+                    break;
+            }
+        } while (this.player == null);
+    }
+
     private void mainMenu() {
 //        this.currentMenu = "Main menu";
         boolean bigLoop = false;
@@ -53,109 +71,9 @@ public class Game {
                 default:
                     bigLoop = false;
             }
-            println();
+            println("\n");
         } while (bigLoop);
 
-    }
-
-    private void catchMenu() {
-        boolean bigLoop = false;
-        do {
-            String str = "You are in " + this.player.getArea() + ".\n";
-            str += "You hear the grass tremble...\n";
-            Pokemon pokemon = dbc.generateWildPokemon(this.player.getArea());
-            str += "It's a " + pokemon.getName() + "!\n";
-            String prompt = "Your actions?";
-            println(str);
-            boolean smallLoop = false;
-            do {
-                int response = promptChoice(prompt, "Catch\t\t- Catch him", "Leave\t\t- Search for another pokemon", "Move on\t\t- Move to another area", "Quit");
-                switch (response) {
-                    case 1:
-                        if (tryToCatch(pokemon)) {
-                            smallLoop = false;
-                            bigLoop = true;
-                        } else {
-                            smallLoop = true;
-                            bigLoop = true;
-                        }
-                        break;
-                    case 2:
-                        smallLoop = false;
-                        bigLoop = true;
-                        break;
-                    case 3:
-                        moveMenu();
-                        smallLoop = false;
-                        bigLoop = true;
-                        break;
-                    default:
-                        smallLoop = false;
-                        bigLoop = false;
-                        break;
-                }
-            } while (smallLoop);
-        } while (bigLoop);
-    }
-
-    private void moveMenu() {
-        try {
-            List<String> areas = dbc.listAreas();
-            int response = promptChoice("Where you want to go?", areas.toArray(new String[areas.size()]));
-            String destination = areas.get(response);
-            dbc.moveToArea(this.player, destination);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void statsMenu() {
-        println("There is some statistic for you.");
-        try {
-            Pokemon mostCaught = dbc.getMostCaughtPokemon(this.player);
-            Pokemon notCaught = dbc.randomNotCaughtPokemon(this.player);
-            Pokemon mostRare = dbc.mostRarePokemon();
-            List<String> users = dbc.usersInArea(this.player.getArea());
-            String usersStr = String.join(", ", users);
-
-
-            println("Most frequently caught pokemon by you: " + mostCaught.getName());
-            println("One of pokemons didn't caught by you: " + (notCaught == null ? "None" : notCaught.getName()));
-            println("And most rare pokemons among all players: " + mostRare.getName());
-
-            print("All players in same Area as you: " + usersStr);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private boolean tryToCatch(Pokemon pokemon) {
-        println("You're trying to catch " + pokemon.getName());
-        double st = pokemon.getStamina() / (Configure.maxStamina + .0001);
-        double ag = (pokemon.getAggressiveness() + 1.0) / (Configure.maxAggressiveness);
-        double successRate = 1 - st * ag;
-        double flip = Math.random();
-
-        System.out.print(pokemon.getStamina() + ":" + pokemon.getAggressiveness() + " = ");
-        System.out.print(st + "*" + ag + "=");
-        System.out.println(successRate + "/" + flip);
-
-        pokemon.decStamina();
-        boolean success = flip <= successRate;
-        if (!success) {
-            println("Pokeball failed you.");
-            return false;
-        }
-        println("You successfully caught him");
-        String nickname = getAnswer("Would you like to name him? (leave empty if not):\n");
-        try {
-            dbc.catchWildPokemon(pokemon, this.player, nickname);
-        } catch (Exception e) {
-//            e.printStackTrace();
-            println("Some database error occurred");
-            return false;
-        }
-        return true;
     }
 
     private void ownedPokemonMenu() {
@@ -174,28 +92,31 @@ public class Game {
             int totalCaughtPokemons = dbc.getCaughtNumber(this.player);
             printChoices("You have caught " + totalCaughtPokemons + " pokemons:", str);
 
-
+            pause();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    private void loginMenu() {
-//        this.currentMenu = "Login menu";
+    private void statsMenu() {
+        println("There is some statistic for you.");
+        try {
+            Pokemon mostCaught = dbc.getMostCaughtPokemon(this.player);
+            Pokemon notCaught = dbc.randomNotCaughtPokemon(this.player);
+            Pokemon mostRare = dbc.mostRarePokemon();
+            List<String> users = dbc.usersInArea(this.player.getArea());
+            users.remove(this.player.getUsername());
+            String usersStr = String.join(", ", users);
 
-        this.player = null;
-        do {
-            int response = promptChoice("What would you like to do?",
-                    "Login\t\t- enter existing account", "Register\t- create new account");
-            switch (response) {
-                case 1:
-                    this.player = authorizeMenu();
-                    break;
-                case 2:
-                    this.player = registerMenu();
-                    break;
-            }
-        } while (this.player == null);
+
+            println("Most frequently caught pokemon by you: " + mostCaught.getName());
+            println("One of pokemons you didn't caught: " + (notCaught == null ? "None" : notCaught.getName()));
+            println("And most rare pokemon among all players: " + mostRare.getName());
+            println("All players in same Area as you: " + usersStr);
+            pause();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private Trainer authorizeMenu() {
@@ -259,6 +180,96 @@ public class Game {
         return trainer;
     }
 
+    private void catchMenu() {
+        boolean bigLoop = false;
+        do {
+            String str = "You are in " + this.player.getArea() + ".\n";
+            str += "You hear the grass tremble...\n";
+            Pokemon pokemon = dbc.generateWildPokemon(this.player.getArea());
+            str += "It's a " + pokemon.getName() + "!\n";
+            String prompt = "Your actions?";
+            println(str);
+            boolean smallLoop = false;
+            do {
+                int response = promptChoice(prompt, "Catch\t\t- Catch him", "Leave\t\t- Search for another pokemon", "Move on\t\t- Move to another area", "Quit");
+                switch (response) {
+                    case 1:
+                        if (tryToCatch(pokemon)) {
+                            smallLoop = false;
+                            bigLoop = true;
+                        } else {
+                            smallLoop = true;
+                            bigLoop = true;
+                        }
+                        break;
+                    case 2:
+                        smallLoop = false;
+                        bigLoop = true;
+                        break;
+                    case 3:
+                        moveMenu();
+                        smallLoop = false;
+                        bigLoop = true;
+                        break;
+                    default:
+                        smallLoop = false;
+                        bigLoop = false;
+                        break;
+                }
+            } while (smallLoop);
+        } while (bigLoop);
+    }
+
+    private boolean tryToCatch(Pokemon pokemon) {
+        println("You're trying to catch " + pokemon.getName());
+        double st = pokemon.getStamina() / (Configure.maxStamina + .0001);
+        double ag = (pokemon.getAggressiveness() + 1.0) / (Configure.maxAggressiveness);
+        double successRate = 1 - st * ag;
+        double flip = Math.random();
+
+        System.out.print(pokemon.getStamina() + ":" + pokemon.getAggressiveness() + " = ");
+        System.out.print(st + "*" + ag + "=");
+        System.out.println(successRate + "/" + flip);
+
+        pokemon.decStamina();
+        boolean success = flip <= successRate;
+        if (!success) {
+            println("Pokeball failed you.");
+            pause();
+            return false;
+        }
+        println("You successfully caught him");
+        String nickname = getAnswer("Would you like to name him? (leave empty if not):\n");
+        try {
+            dbc.catchWildPokemon(pokemon, this.player, nickname);
+        } catch (Exception e) {
+//            e.printStackTrace();
+            println("Some database error occurred");
+            return false;
+        }
+        pause();
+        return true;
+    }
+
+    private void moveMenu() {
+        try {
+            List<String> areas = dbc.listAreas();
+            int response = promptChoice("Where you want to go?", areas.toArray(new String[areas.size()]));
+            String destination = areas.get(response);
+            dbc.moveToArea(this.player, destination);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void pause() {
+        println("Press Enter key to continue...");
+        try {
+            System.in.read();
+        } catch (Exception ignored) {
+        }
+    }
+
     private String getAnswer(String str) {
         print(str);
         return scanner.nextLine();
@@ -282,7 +293,7 @@ public class Game {
     static private void printChoices(String title, String... choices) {
         println(title);
         for (int i = 0; i < choices.length; i++) {
-            print("(" + (i+1) + ") ");
+            print("(" + (i + 1) + ") ");
             println(choices[i]);
         }
     }
@@ -298,4 +309,5 @@ public class Game {
     static private void println() {
         println("");
     }
+
 }
