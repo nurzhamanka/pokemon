@@ -62,19 +62,28 @@ public class Game {
         println(str);
         boolean repeat = true;
         do {
-            int response = promptChoice(prompt, "Catch him", "Move on", "Quit");
-            if (response == 0) {
-                if (tryToCatch(pokemon)) {
+            int response = promptChoice(prompt, "Catch him", "Search for another pokemon", "Move to another area", "Quit");
+            switch (response) {
+                case 0:
+                    if (tryToCatch(pokemon)) {
+                        catchMenu();
+                        repeat = false;
+                    }
+                    break;
+                case 1:
                     catchMenu();
-                    repeat = false;
-                }
-            } else if (response == 1) {
-                catchMenu();
-                return;
-            } else if (response == 2) {
-                return;
+                    return;
+                case 2:
+                    moveMenu();
+                    return;
+                case 3:
+                    return;
             }
         } while (repeat);
+    }
+
+    private void moveMenu() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     private boolean tryToCatch(Pokemon pokemon) {

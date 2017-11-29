@@ -305,5 +305,22 @@ public class DatabaseClient {
         }
     }
 
+    ///by particular trainer
+    Pokemon getMostCatchedPokemon(Trainer trainer) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
+    ///by particular trainer
+    Pokemon randomNotCatchedPokemon(Trainer trainer) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    ///In general, across all trainers
+    Pokemon mostRarePokemon() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    List<String> usersInArea(String area) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }
