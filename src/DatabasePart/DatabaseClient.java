@@ -31,7 +31,6 @@ public class DatabaseClient {
      * Make the connection, pass the exception to the caller
      */
     private Connection getConnection() throws SQLException {
-
         Properties connectionProps = new Properties();
         connectionProps.put("user", Configure.username);
         connectionProps.put("password", Configure.password);
@@ -42,7 +41,6 @@ public class DatabaseClient {
     }
 
     public void showAllTrainers() throws SQLException {
-
         // Execute a query
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery("SELECT * FROM TRAINER");
@@ -55,16 +53,14 @@ public class DatabaseClient {
             }
             System.out.println("");
         }
-
     }
 
-    public Trainer getTrainer(String username) {
+    private Trainer getTrainer(String username) {
         PreparedStatement statement;
         try {
             statement = conn.prepareStatement("SELECT * FROM TRAINER WHERE TRAINER.username=?");
             statement.setString(1, username);
             ResultSet rs = statement.executeQuery();
-//            rs.getMetaData();
             if (!rs.next())
                 return null;
             return new Trainer(rs);
@@ -88,7 +84,6 @@ public class DatabaseClient {
         trainerCreate.setString(5, trainer.getArea());
 
         executor(trainerCreate, true);
-
     }
 
     public Trainer authorize(String username, String password) throws Exception {
@@ -102,7 +97,6 @@ public class DatabaseClient {
     }
     
     public Pokemon generateWildPokemon(String area) {
-
         String pkmName;
 
         try {
@@ -110,14 +104,11 @@ public class DatabaseClient {
             PreparedStatement stmt = conn.prepareStatement("SELECT Name FROM PKM_WILD WHERE Area_name = ? ORDER BY RAND() LIMIT 1");
             stmt.setString(1, area);
             ResultSet rs = stmt.executeQuery();
-//            if (rs.getFetchSize() == 0)
-//                return null;
             rs.next();
             pkmName = rs.getString("Name");
 
         } catch (SQLException e) {
             e.printStackTrace();
-//            System.out.println();
             return null;
         }
 
@@ -128,7 +119,6 @@ public class DatabaseClient {
     }
 
     public void catchWildPokemon(Pokemon pokemon, Trainer trainer, String nickname) throws Exception {
-
         conn.setAutoCommit(false);
 
         if (pokemon.getTrainer() != null) {
@@ -150,12 +140,11 @@ public class DatabaseClient {
     }
 
     public List<Pokemon> getCatchedPokemon(Trainer trainer) throws SQLException {
-
         LinkedList<Pokemon> pokemons = new LinkedList<>();
 
-        PreparedStatement stmt = conn.prepareStatement("SELECT Name, Nickname FROM PKM_OWNED " +
-                                                        "JOIN TRAINER ON PKM_OWNED.Trainer_ID = TRAINER.ID " +
-                                                        "WHERE ID = ?");
+        PreparedStatement stmt = conn.prepareStatement("SELECT Name, Nickname\n" +
+                "FROM PKM_OWNED, TRAINER\n" +
+                "WHERE PKM_OWNED.Trainer_ID = TRAINER.ID AND TRAINER.ID = ?");
         stmt.setInt(1, trainer.getId());
         ResultSet rs = stmt.executeQuery();
 
@@ -167,13 +156,11 @@ public class DatabaseClient {
         }
 
         stmt.close();
-
         return pokemons;
 
     }
 
     public int getCatchedNumber(Trainer trainer) throws SQLException {
-
         int result = 0;
 
         PreparedStatement stmt = conn.prepareStatement("SELECT count(*) FROM PKM_OWNED " +
@@ -201,12 +188,10 @@ public class DatabaseClient {
         }
 
         stmt.close();
-
         return areas;
     }
 
     public void moveToArea(Trainer trainer, String area) throws SQLException {
-
         conn.setAutoCommit(false);
 
         PreparedStatement stmt = conn.prepareStatement("UPDATE TRAINER SET Area_name = ? WHERE ID = ?");
@@ -221,8 +206,7 @@ public class DatabaseClient {
 
     // performs updates or queries
     private boolean executor(PreparedStatement stmt, boolean update) throws SQLException {
-
-        boolean flag = false;
+        boolean flag;
 
         try {
             if (update)
@@ -236,16 +220,14 @@ public class DatabaseClient {
             e.printStackTrace();
             conn.rollback();
             flag = false;
-        } finally {
-            stmt.close();
-            conn.setAutoCommit(true);
-            return flag;
         }
+        stmt.close();
+        conn.setAutoCommit(true);
+        return flag;
     }
 
     ///by particular trainer
     public Pokemon getMostCatchedPokemon(Trainer trainer) throws SQLException {
-
         // HANDLE TRAINERS WHO HAVE NOT CAUGHT ANY POKEMON
         Pokemon pkm = null;
 
@@ -266,7 +248,6 @@ public class DatabaseClient {
 
     ///by particular trainer
     public Pokemon randomNotCatchedPokemon(Trainer trainer) throws SQLException {
-
         Pokemon pkm = null;
 
         PreparedStatement stmt = conn.prepareStatement("SELECT p.Name as Name " +
@@ -306,7 +287,6 @@ public class DatabaseClient {
     }
 
     public List<String> usersInArea(String area) throws SQLException {
-
         LinkedList<String> users = new LinkedList<>();
 
         PreparedStatement stmt = conn.prepareStatement("SELECT username FROM TRAINER WHERE Area_name = ?");
@@ -320,9 +300,8 @@ public class DatabaseClient {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            stmt.close();
-            return users;
         }
+        stmt.close();
+        return users;
     }
 }

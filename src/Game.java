@@ -4,85 +4,112 @@ import Model.Pokemon;
 import Model.Trainer;
 
 import java.sql.SQLException;
-import java.util.InputMismatchException;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 
 public class Game {
     private Trainer player;
-    private String currentMenu;
+    //    private String currentMenu;
     private Scanner scanner;
     private DatabaseClient dbc;
 
     public Game() {
         player = null;
-        currentMenu = "-----";
+//        currentMenu = "-----";
         Configure.loadConfigure("config.txt");
         scanner = new Scanner(System.in);
         dbc = new DatabaseClient();
     }
 
     void play() throws Exception {
-        dbc.showAllTrainers();
+//        dbc.showAllTrainers();
         println("Welcome to $gamename$\n");
 
         this.loginMenu();
         println("You're in " + this.player.getArea());
-        while (true) {
-            if (!mainMenu())
-                break;
-        }
+        mainMenu();
         println("Bye:)");
     }
 
-    private boolean mainMenu() {
-        this.currentMenu = "Main menu";
-        int response = promptChoice("What would you like to do?",
-                "Catch pokemon", "See catched pokemons", "Exit");
-        switch (response) {
-            case 0:
-                println("Let's go outside.");
-                catchMenu();
-                break;
-            case 1:
-                ownedPokemonMenu();
-                break;
-            case 2:
-                return false;
-        }
-        return true;
+    private void mainMenu() {
+//        this.currentMenu = "Main menu";
+        boolean bigLoop = false;
+        do {
+            int response = promptChoice("What would you like to do?",
+                    "Catch\t\t- Catch pokemon", "Pokedex\t\t- See catched pokemons", "Stats\t\t- See some statistics", "Exit");
+            switch (response) {
+                case 0:
+                    println("Let's go outside.");
+                    catchMenu();
+                    bigLoop = true;
+                    break;
+                case 1:
+                    ownedPokemonMenu();
+                    bigLoop = true;
+                    break;
+                case 2:
+                    statsMenu();
+                    bigLoop = true;
+                    break;
+                default:
+                    bigLoop = false;
+            }
+            println();
+        } while (bigLoop);
 
     }
 
     private void catchMenu() {
-        String str = "You hear grass trembling...\n";
-        Pokemon pokemon = dbc.generateWildPokemon(this.player.getArea());
-        str += "It's a " + pokemon.getName() + "\n";
-        String prompt = "Your actions?";
-        println(str);
-        boolean repeat = true;
+        boolean bigLoop = false;
         do {
-            int response = promptChoice(prompt, "Catch him", "Search for another pokemon", "Move to another area", "Quit");
-            switch (response) {
-                case 0:
-                    if (tryToCatch(pokemon)) {
-                        catchMenu();
-                        repeat = false;
-                    }
-                    break;
-                case 1:
-                    catchMenu();
-                    return;
-                case 2:
-                    moveMenu();
-                    return;
-                case 3:
-                    return;
-            }
-        } while (repeat);
+            String str = "You are in " + this.player.getArea() + ".\n";
+            str += "You hear grass trembling...\n";
+            Pokemon pokemon = dbc.generateWildPokemon(this.player.getArea());
+            str += "It's a " + pokemon.getName() + "\n";
+            String prompt = "Your actions?";
+            println(str);
+            boolean smallLoop = false;
+            do {
+                int response = promptChoice(prompt, "Catch\t\t- Catch him", "Leave\t\t- Search for another pokemon", "Move on\t\t- Move to another area", "Quit");
+                switch (response) {
+                    case 0:
+                        if (tryToCatch(pokemon)) {
+                            smallLoop = false;
+                            bigLoop = true;
+                        } else {
+                            smallLoop = true;
+                            bigLoop = true;
+                        }
+                        break;
+                    case 1:
+                        smallLoop = false;
+                        bigLoop = true;
+                        break;
+                    case 2:
+                        moveMenu();
+                        smallLoop = false;
+                        bigLoop = true;
+                        break;
+                    default:
+                        smallLoop = false;
+                        bigLoop = false;
+                        break;
+                }
+            } while (smallLoop);
+        } while (bigLoop);
     }
 
     private void moveMenu() {
+        try {
+            List<String> areas = dbc.listAreas();
+            int responce = promptChoice("Where you want to go?", areas.toArray(new String[areas.size()]));
+            String destination = areas.get(responce);
+            dbc.moveToArea(this.player, destination);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void statsMenu() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -93,7 +120,7 @@ public class Game {
         double successRate = 1 - st * ag;
         double flip = Math.random();
 
-        System.out.print(pokemon.getStamina() + ":" + pokemon.getAggressiveness() + " = " );
+        System.out.print(pokemon.getStamina() + ":" + pokemon.getAggressiveness() + " = ");
         System.out.print(st + "*" + ag + "=");
         System.out.println(successRate + "/" + flip);
 
@@ -116,16 +143,34 @@ public class Game {
     }
 
     private void ownedPokemonMenu() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+            List<Pokemon> pokemons = dbc.getCatchedPokemon(this.player);
+            int size = pokemons.size();
+            String[] str = new String[size];
+            for (int i = 0; i < size; i++) {
+                Pokemon poke = pokemons.get(i);
+                if (poke.getName().equals(poke.getNickname())) {
+                    str[i] = poke.getName();
+                } else {
+                    str[i] = poke.getNickname() + "\t\t(" + poke.getName() + ")";
+                }
+            }
+            int totalCatchedPokemons = dbc.getCatchedNumber(this.player);
+            printChoices("You catched " + totalCatchedPokemons + "pokemons:", str);
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private void loginMenu() {
-        this.currentMenu = "Login menu";
+//        this.currentMenu = "Login menu";
 
         this.player = null;
         do {
             int response = promptChoice("What would you like to do?",
-                    "login to existing account", "register new account");
+                    "Login\t\t- enter existing account", "Register\t- create new account");
             switch (response) {
                 case 0:
                     this.player = authorizeMenu();
@@ -138,7 +183,7 @@ public class Game {
     }
 
     private Trainer authorizeMenu() {
-        this.currentMenu = "Authorize menu";
+//        this.currentMenu = "Authorize menu";
         String login = getAnswer("Enter login: ");
         String password = getAnswer("Enter password: ");
 
@@ -158,7 +203,9 @@ public class Game {
             println("Hello, " + trainer.getUsername());
             return trainer;
         }
-        int response = promptChoice("Would you like to try again?", "try again", "cancel");
+        int response = promptChoice("Would you like to try again?",
+                "Try again\t\t- Enter password again",
+                "Cancel\t\t- Try another authorization method");
         println();
         if (response == 0)
             return this.authorizeMenu();
@@ -167,7 +214,7 @@ public class Game {
     }
 
     private Trainer registerMenu() {
-        this.currentMenu = "Register menu";
+//        this.currentMenu = "Register menu";
         println("We need some information about you");
         String login = getAnswer("nickname: ");
         String password = getAnswer("password: ");
