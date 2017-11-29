@@ -30,6 +30,20 @@ public class Pokemon {
         this.setArea(null);
     }
 
+    @Override
+    public String toString() {
+        String string;
+        if (nickname == null) {
+            string = this.name + " (" + this.aggressiveness + ":" + this.stamina + ")/" + this.area;
+        } else {
+            string = this.nickname;
+            if (!this.nickname.equals(this.name))
+                string += " (" + this.name + ")";
+            string += "/" + this.trainer.getUsername();
+        }
+        return string;
+    }
+
     public String getName() {
         return name;
     }

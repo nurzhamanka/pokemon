@@ -110,7 +110,23 @@ public class Game {
     }
 
     private void statsMenu() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        println("There is some statistic for you.");
+        try {
+            Pokemon mostCaught = dbc.getMostCatchedPokemon(this.player);
+            Pokemon notCaught = dbc.randomNotCatchedPokemon(this.player);
+            Pokemon mostRare = dbc.mostRarePokemon();
+            List<String> users = dbc.usersInArea(this.player.getArea());
+            String usersStr = String.join(", ", users);
+
+
+            println("Most frequently caught pokemon by you: " + mostCaught.getName());
+            println("One of pokemons didn't caught by you: " + (notCaught == null ? "None" : notCaught.getName()));
+            println("And most rare pokemons among all players: " + mostRare.getName());
+
+            print("All players in same Area as you: " + usersStr);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private boolean tryToCatch(Pokemon pokemon) {
@@ -205,7 +221,7 @@ public class Game {
         }
         int response = promptChoice("Would you like to try again?",
                 "Try again\t\t- Enter password again",
-                "Cancel\t\t- Try another authorization method");
+                "Cancel\t\t\t- Try another authorization method");
         println();
         if (response == 1)
             return this.authorizeMenu();
@@ -251,15 +267,16 @@ public class Game {
     private int promptChoice(String title, String... choices) {
         printChoices(title, choices);
         int choice = -1;
-        while (!(1 <= choice && choice <= choices.length)) { // will loop until there's a valid age
+        while (true) { // will loop until there's a valid age
             try {
                 String input = scanner.nextLine();
                 choice = Integer.parseInt(input);
             } catch (Exception e) {
-                println("Enter value between 1 and " + (choices.length) + ". Try again.");
             }
+            if (1 <= choice && choice <= choices.length)
+                return choice;
+            println("Enter value between 1 and " + (choices.length) + ". Try again.");
         }
-        return choice;
     }
 
     static private void printChoices(String title, String... choices) {

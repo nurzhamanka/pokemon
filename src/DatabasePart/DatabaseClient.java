@@ -76,7 +76,7 @@ public class DatabaseClient {
 
         PreparedStatement trainerCreate = conn.prepareStatement(
                 "INSERT INTO TRAINER(username, password, FName, LName, Area_name)\n" +
-                "VALUES (?, ?, ?, ?, ?)");
+                        "VALUES (?, ?, ?, ?, ?)");
         trainerCreate.setString(1, trainer.getUsername());
         trainerCreate.setString(2, trainer.getPassword());
         trainerCreate.setString(3, trainer.getFirstName());
@@ -231,17 +231,17 @@ public class DatabaseClient {
         // HANDLE TRAINERS WHO HAVE NOT CAUGHT ANY POKEMON
         Pokemon pkm = null;
 
-        PreparedStatement stmt = conn.prepareStatement("SELECT p.Name as Name, count(*) as number " +
-                "FROM TRAINER t JOIN PKM_OWNED p ON t.ID = p.Trainer_ID " +
-                "WHERE t.ID = ? " +
-                "GROUP BY p.Name " +
-                "ORDER BY number DESC " +
+        PreparedStatement stmt = conn.prepareStatement("SELECT p.Name AS Name, p.Nickname AS Nickname, count(*) AS number\n" +
+                "FROM TRAINER t JOIN PKM_OWNED p ON t.ID = p.Trainer_ID\n" +
+                "WHERE t.ID = ?\n" +
+                "GROUP BY p.Name\n" +
+                "ORDER BY number DESC\n" +
                 "LIMIT 1");
         stmt.setInt(1, trainer.getId());
         ResultSet rs = stmt.executeQuery();
 
         while (rs.next())
-            pkm = new Pokemon(rs.getString("Name"), trainer, null);
+            pkm = new Pokemon(rs.getString("Name"), trainer, rs.getString("Nickname"));
 
         return pkm;
     }
@@ -250,14 +250,15 @@ public class DatabaseClient {
     public Pokemon randomNotCatchedPokemon(Trainer trainer) throws SQLException {
         Pokemon pkm = null;
 
-        PreparedStatement stmt = conn.prepareStatement("SELECT p.Name as Name " +
-                "FROM PKM_WILD " +
-                "WHERE p.Name NOT IN (SELECT o.Name " +
-                                        "FROM PKM_OWNED o " +
-                                        "JOIN TRAINER t ON o.Trainer_ID = t.ID " +
-                                        "WHERE t.ID = ?) " +
-                "ORDER BY RAND() " +
-                "LIMIT 1");
+        PreparedStatement stmt = conn.prepareStatement("SELECT p.Name AS Name\n" +
+                "FROM PKM_WILD AS p\n" +
+                "WHERE p.Name NOT IN (\n" +
+                "  SELECT o.Name AS 'Name'\n" +
+                "    FROM PKM_OWNED o JOIN TRAINER t ON o.Trainer_ID = t.ID\n" +
+                "    WHERE t.ID = ?\n" +
+                ")\n" +
+                "# ORDER BY RAND()\n" +
+                "# LIMIT 1");
         stmt.setInt(1, trainer.getId());
         ResultSet rs = stmt.executeQuery();
 
@@ -272,7 +273,7 @@ public class DatabaseClient {
 
         Pokemon pkm = null;
 
-        PreparedStatement stmt = conn.prepareStatement("SELECT p.Name as Name, count(*) as number " +
+        PreparedStatement stmt = conn.prepareStatement("SELECT p.Name AS Name, count(*) AS number " +
                 "FROM TRAINER t JOIN PKM_OWNED p ON t.ID = p.Trainer_ID " +
                 "GROUP BY p.Name " +
                 "ORDER BY number ASC " +
