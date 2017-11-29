@@ -233,6 +233,8 @@ public class DatabaseClient {
             pokemons.add(pkm);
         }
 
+        stmt.close();
+
         return pokemons;
 
     }
@@ -255,8 +257,20 @@ public class DatabaseClient {
         return result;
     }
 
-    public List<String> listAreas() {
-        throw new UnsupportedOperationException();
+    public List<String> listAreas() throws SQLException {
+        LinkedList<String> areas = new LinkedList<>();
+
+        PreparedStatement stmt = conn.prepareStatement("SELECT Name FROM AREA");
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) {
+            String areaName = rs.getString("Name");
+            areas.add(areaName);
+        }
+
+        stmt.close();
+
+        return areas;
     }
 
     public void moveToArea(Trainer trainer, String area) throws SQLException {
